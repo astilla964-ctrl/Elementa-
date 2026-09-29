@@ -46,7 +46,9 @@ data class PotentialInteraction(
     val centerPosition: Offset,
     val readinessPercentage: Float, // 0.0 to 1.0 based on temp, apparatus, activation energy
     val isActivationEnergyMet: Boolean,
-    val conditionSummary: String
+    val conditionSummary: String,
+    val activationTemp: Double = reaction.minTemp,
+    val currentTemp: Double = 25.0
 )
 
 data class ContainerBounds2D(

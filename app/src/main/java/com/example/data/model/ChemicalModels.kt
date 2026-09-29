@@ -147,7 +147,43 @@ enum class LabToolType(
             "Collect evolved hydrogen and oxygen gases in inverted graduated tubes.",
             "Ensure electrolyte salt or acid conductivity is present."
         )
-    )
+    );
+
+    val maxSafeTempC: Double
+        get() = when (this) {
+            BEAKER -> 500.0
+            ERLENMEYER_FLASK -> 500.0
+            TEST_TUBE -> 450.0
+            CRUCIBLE -> 1500.0
+            EVAPORATING_DISH -> 800.0
+            BUNSEN_BURNER -> 1500.0
+            CONDENSER -> 400.0
+            TITRATION_BURET -> 100.0
+            ELECTRODES -> 95.0
+            CENTRIFUGE -> 60.0
+        }
+
+    val thermalCrackTempC: Double
+        get() = when (this) {
+            CRUCIBLE -> 1600.0
+            else -> maxSafeTempC + 100.0
+        }
+
+    val maxSafePressureAtm: Double
+        get() = when (this) {
+            BEAKER -> 2.5
+            ERLENMEYER_FLASK -> 3.0
+            TEST_TUBE -> 3.5
+            CRUCIBLE -> 35.0
+            CONDENSER -> 3.0
+            else -> 1.5
+        }
+
+    val rupturePressureAtm: Double
+        get() = when (this) {
+            CRUCIBLE -> 50.0
+            else -> maxSafePressureAtm * 1.8
+        }
 }
 
 data class Chemical(
@@ -167,7 +203,17 @@ data class Chemical(
     val symbol: String? = null,
     val period: Int? = null,
     val group: Int? = null,
-    val elementSeries: String? = null
+    val elementSeries: String? = null,
+    val meltingPointC: Double = when {
+        physicalState.contains("Gas", ignoreCase = true) -> -180.0
+        physicalState.contains("Solid", ignoreCase = true) || physicalState.contains("Precipitate", ignoreCase = true) -> 550.0
+        else -> 0.0
+    },
+    val boilingPointC: Double = when {
+        physicalState.contains("Gas", ignoreCase = true) -> -50.0
+        physicalState.contains("Solid", ignoreCase = true) || physicalState.contains("Precipitate", ignoreCase = true) -> 1200.0
+        else -> 100.0
+    }
 )
 
 data class Reaction(

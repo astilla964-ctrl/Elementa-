@@ -44,6 +44,7 @@ class ChemistryEngine(
     private var isHeating: Boolean = false
     private var isElectricityActive: Boolean = false
     private var isCentrifuging: Boolean = false
+    private var isStopperSealed: Boolean = false
 
     private val _engineState = MutableStateFlow(ChemistryEngineState())
     val engineState: StateFlow<ChemistryEngineState> = _engineState.asStateFlow()
@@ -53,13 +54,15 @@ class ChemistryEngine(
         temperature: Double,
         heating: Boolean,
         electricity: Boolean,
-        centrifuging: Boolean
+        centrifuging: Boolean,
+        stopperSealed: Boolean = false
     ) {
         activeTool = tool
         systemTemperature = temperature
         isHeating = heating
         isElectricityActive = electricity
         isCentrifuging = centrifuging
+        isStopperSealed = stopperSealed
         particles.forEach { it.localizedTemp = temperature }
         recalculateState()
     }
@@ -161,10 +164,34 @@ class ChemistryEngine(
      * - Centrifugal radial pull if centrifuge is active
      */
     fun step(dt: Float = 0.016f) {
-        val thermalSpeed = (sqrt(max(1.0, systemTemperature)) * 0.003f).toFloat()
+        val kelvin = max(1.0, systemTemperature + 273.15)
+        val thermalSpeed = (sqrt(kelvin) * 0.0015f).toFloat()
 
         particles.forEach { p ->
-            // 1. Thermal Brownian motion
+            // Dynamic Phase Transitions based on thermal points:
+            val bp = p.chemical.boilingPointC
+            val mp = p.chemical.meltingPointC
+            if (p.localizedTemp >= bp) {
+                // Liquid/Solid boils into Vapor/Gas
+                if (p.phase != ParticlePhase.GAS) {
+                    p.phase = ParticlePhase.GAS
+                }
+            } else if (p.localizedTemp <= mp) {
+                // Freezes into Solid
+                if (p.phase != ParticlePhase.SOLID && p.phase != ParticlePhase.PRECIPITATE) {
+                    p.phase = ParticlePhase.SOLID
+                }
+            } else {
+                // In Liquid temperature envelope:
+                if (activeTool == LabToolType.CONDENSER && p.phase == ParticlePhase.GAS) {
+                    // Condenser jacket cools and reliquefies hot vapor
+                    p.phase = ParticlePhase.LIQUID
+                } else if (p.phase == ParticlePhase.SOLID && !p.chemical.physicalState.contains("Solid", true) && !p.chemical.physicalState.contains("Precipitate", true)) {
+                    p.phase = ParticlePhase.LIQUID
+                }
+            }
+
+            // 1. Thermal Brownian motion proportional to sqrt(Kelvin)
             p.vx += (Random.nextFloat() - 0.5f) * thermalSpeed
             p.vy += (Random.nextFloat() - 0.5f) * thermalSpeed
 
@@ -172,7 +199,7 @@ class ChemistryEngine(
             when (p.phase) {
                 ParticlePhase.GAS -> {
                     // Upward buoyancy
-                    p.vy -= 0.015f * dt
+                    p.vy -= 0.02f * dt
                 }
                 ParticlePhase.PRECIPITATE, ParticlePhase.SOLID -> {
                     // Downward sedimentation
@@ -221,8 +248,13 @@ class ChemistryEngine(
             if (p.y < topLimit) {
                 p.y = topLimit
                 if (p.phase == ParticlePhase.GAS) {
-                    // Gases bubble out into atmosphere
-                    p.vy = -0.01f
+                    if (isStopperSealed) {
+                        // Sealed stopper lid: Gas particles bounce downwards and build pressure
+                        p.vy = -p.vy * 0.6f
+                    } else {
+                        // Gases bubble out into atmosphere
+                        p.vy = -0.01f
+                    }
                 } else {
                     p.vy = -p.vy * 0.7f
                 }
@@ -279,20 +311,30 @@ class ChemistryEngine(
                 val centrifugeSatisfied = !reaction.requiresCentrifuge || isCentrifuging
                 val toolSatisfied = reaction.requiredTool == null || reaction.requiredTool == activeTool
 
+                val tempProgress = if (reaction.minTemp > 25.0) {
+                    ((systemTemperature - 20.0) / (reaction.minTemp - 20.0)).coerceIn(0.0, 1.0).toFloat()
+                } else 1.0f
+
                 var score = 0f
-                if (tempSatisfied) score += 0.4f
+                if (tempSatisfied) score += 0.5f else score += 0.5f * tempProgress
                 if (electricitySatisfied) score += 0.2f
-                if (centrifugeSatisfied) score += 0.2f
-                if (toolSatisfied) score += 0.2f
+                if (centrifugeSatisfied) score += 0.15f
+                if (toolSatisfied) score += 0.15f
 
                 val isReady = tempSatisfied && electricitySatisfied && centrifugeSatisfied && toolSatisfied
 
                 val conditionSummary = buildString {
-                    if (!tempSatisfied) append("Needs ${reaction.minTemp.toInt()}°C. ")
-                    if (reaction.requiresElectricity && !isElectricityActive) append("Requires DC power. ")
+                    if (!tempSatisfied) {
+                        if (systemTemperature < reaction.minTemp) {
+                            append("Heat Required: Reached ${systemTemperature.toInt()}°C / Target ${reaction.minTemp.toInt()}°C. ")
+                        } else {
+                            append("Temperature exceeds maximum ${reaction.maxTemp.toInt()}°C. ")
+                        }
+                    }
+                    if (reaction.requiresElectricity && !isElectricityActive) append("Requires DC power supply. ")
                     if (reaction.requiresCentrifuge && !isCentrifuging) append("Requires centrifugation. ")
                     if (reaction.requiredTool != null && reaction.requiredTool != activeTool) append("Requires ${reaction.requiredTool.title}. ")
-                    if (isReady) append("Ready to react!")
+                    if (isReady) append("Activation energy met! Ready to react.")
                 }
 
                 potentialInteractions.add(
@@ -302,7 +344,9 @@ class ChemistryEngine(
                         centerPosition = Offset(centerX, centerY),
                         readinessPercentage = score,
                         isActivationEnergyMet = isReady,
-                        conditionSummary = conditionSummary.trim()
+                        conditionSummary = conditionSummary.trim(),
+                        activationTemp = reaction.minTemp,
+                        currentTemp = systemTemperature
                     )
                 )
             }
@@ -343,7 +387,7 @@ class ChemistryEngine(
         }
 
         // 3. Thermodynamic energy release
-        systemTemperature = (systemTemperature + rx.tempChange).coerceIn(-10.0, 1500.0)
+        systemTemperature = (systemTemperature + rx.tempChange).coerceIn(-196.0, 1500.0)
         particles.forEach { it.localizedTemp = systemTemperature }
 
         recalculateState()

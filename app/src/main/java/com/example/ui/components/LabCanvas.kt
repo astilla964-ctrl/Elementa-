@@ -8,12 +8,25 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -23,9 +36,17 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.data.model.ContainerHazardState
 import com.example.data.model.LabToolType
+import com.example.data.model.ThermalApparatus
 import com.example.engine.model.ElementParticle2D
 import com.example.engine.model.PotentialInteraction
+import kotlin.math.cos
+import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.random.Random
 
@@ -45,7 +66,17 @@ fun LabCanvas(
     transparencyAlpha: Float = 0.78f,
     isReacting: Boolean,
     particles: List<ElementParticle2D> = emptyList(),
-    potentialInteractions: List<PotentialInteraction> = emptyList()
+    potentialInteractions: List<PotentialInteraction> = emptyList(),
+    thermalApparatus: ThermalApparatus = ThermalApparatus.NONE,
+    pressure: Double = 1.0,
+    isStopperSealed: Boolean = false,
+    isPressureReliefOpen: Boolean = false,
+    containerHazardState: ContainerHazardState = ContainerHazardState.INTACT,
+    currentPh: Double = 7.0,
+    tempUnitCelsius: Boolean = true,
+    pressureUnitAtm: Boolean = true,
+    onToggleTempUnit: () -> Unit = {},
+    onTogglePressureUnit: () -> Unit = {}
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "LabAnimation")
 
@@ -99,170 +130,233 @@ fun LabCanvas(
     val glassHighlight = Color.White.copy(alpha = 0.35f)
     val gridTickColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
 
-    Canvas(modifier = modifier.fillMaxSize()) {
-        val w = size.width
-        val h = size.height
+    Box(modifier = modifier.fillMaxSize()) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val w = size.width
+            val h = size.height
 
-        // 1. Draw Burner Heat Flame (if heating or Bunsen Burner selected)
-        if (isHeating || activeTool == LabToolType.BUNSEN_BURNER) {
-            drawBurnerFlame(
-                centerX = w * 0.5f,
-                baseY = h * 0.86f,
-                flicker = flameFlicker,
-                flameHeight = h * 0.16f * flameFlicker
-            )
-        }
-
-        // 2. Draw Specific Laboratory Tool
-        when (activeTool) {
-            LabToolType.BEAKER -> {
-                drawBeaker(
-                    w = w,
-                    h = h,
-                    liquidColor = liquidColor,
-                    fillPercent = liquidFillPercent,
-                    wavePhase = wavePhase,
-                    outlineColor = outlineColor,
-                    glassHighlight = glassHighlight,
-                    gridTickColor = gridTickColor,
-                    temperature = temperature,
-                    bubbleProgress = bubbleProgress,
-                    bubbleOffsets = bubbleOffsets,
-                    hasPrecipitate = hasPrecipitate,
-                    hasUnreactedSolid = hasUnreactedSolid,
-                    unreactedSolidColor = unreactedSolidColor,
-                    transparencyAlpha = transparencyAlpha,
-                    isReacting = isReacting
-                )
-            }
-            LabToolType.ERLENMEYER_FLASK -> {
-                drawFlask(
-                    w = w,
-                    h = h,
-                    liquidColor = liquidColor,
-                    fillPercent = liquidFillPercent,
-                    wavePhase = wavePhase,
-                    outlineColor = outlineColor,
-                    glassHighlight = glassHighlight,
-                    gridTickColor = gridTickColor,
-                    temperature = temperature,
-                    bubbleProgress = bubbleProgress,
-                    bubbleOffsets = bubbleOffsets,
-                    hasPrecipitate = hasPrecipitate,
-                    hasUnreactedSolid = hasUnreactedSolid,
-                    unreactedSolidColor = unreactedSolidColor,
-                    transparencyAlpha = transparencyAlpha,
-                    isReacting = isReacting
-                )
-            }
-            LabToolType.TEST_TUBE -> {
-                drawTestTube(
-                    w = w,
-                    h = h,
-                    liquidColor = liquidColor,
-                    fillPercent = liquidFillPercent,
-                    wavePhase = wavePhase,
-                    outlineColor = outlineColor,
-                    glassHighlight = glassHighlight,
-                    temperature = temperature,
-                    bubbleProgress = bubbleProgress,
-                    bubbleOffsets = bubbleOffsets,
-                    hasPrecipitate = hasPrecipitate,
-                    hasUnreactedSolid = hasUnreactedSolid,
-                    unreactedSolidColor = unreactedSolidColor,
-                    transparencyAlpha = transparencyAlpha,
-                    isReacting = isReacting
-                )
-            }
-            LabToolType.ELECTRODES -> {
-                drawElectrolysisCell(
-                    w = w,
-                    h = h,
-                    liquidColor = liquidColor,
-                    fillPercent = liquidFillPercent,
-                    outlineColor = outlineColor,
-                    glassHighlight = glassHighlight,
-                    isElectricityActive = isElectricityActive,
-                    bubbleProgress = bubbleProgress
-                )
-            }
-            LabToolType.CENTRIFUGE -> {
-                drawCentrifuge(
-                    w = w,
-                    h = h,
-                    outlineColor = outlineColor,
-                    isCentrifuging = isCentrifuging,
-                    wavePhase = wavePhase
-                )
-            }
-            LabToolType.TITRATION_BURET -> {
-                drawTitrationBuret(
-                    w = w,
-                    h = h,
-                    liquidColor = liquidColor,
-                    fillPercent = liquidFillPercent,
-                    outlineColor = outlineColor,
-                    glassHighlight = glassHighlight,
-                    bubbleProgress = bubbleProgress
-                )
-            }
-            LabToolType.CONDENSER -> {
-                drawCondenser(
-                    w = w,
-                    h = h,
-                    outlineColor = outlineColor,
-                    glassHighlight = glassHighlight,
-                    wavePhase = wavePhase
-                )
-            }
-            LabToolType.EVAPORATING_DISH -> {
-                drawEvaporatingDish(
-                    w = w,
-                    h = h,
-                    liquidColor = liquidColor,
-                    fillPercent = liquidFillPercent,
-                    outlineColor = outlineColor,
-                    glassHighlight = glassHighlight,
-                    temperature = temperature,
-                    bubbleProgress = bubbleProgress
-                )
-            }
-            LabToolType.CRUCIBLE -> {
-                drawCrucible(
-                    w = w,
-                    h = h,
-                    outlineColor = outlineColor,
-                    temperature = temperature,
-                    isHeating = isHeating
-                )
-            }
-            LabToolType.BUNSEN_BURNER -> {
-                drawBunsenBurnerApparatus(
-                    w = w,
-                    h = h,
-                    outlineColor = outlineColor,
-                    flameFlicker = flameFlicker
-                )
-            }
-        }
-
-        // 3. 2D Element Particles & Interaction Bonds
-        drawElementParticles(
-            w = w,
-            h = h,
-            particles = particles,
-            potentialInteractions = potentialInteractions
-        )
-
-        // 4. Steam particles when temperature > 90°C
-        if (temperature > 90.0) {
-            drawSteamVapor(
+            // 1. Draw Heating or Cooling Environmental Apparatus placed under container
+            drawThermalApparatus(
                 w = w,
                 h = h,
-                bubbleProgress = bubbleProgress,
-                steamOffsets = steamOffsets
+                apparatus = thermalApparatus,
+                isHeating = isHeating,
+                flameFlicker = flameFlicker,
+                temperature = temperature,
+                outlineColor = outlineColor,
+                wavePhase = wavePhase
             )
+
+            // 2. Draw Thermal Radiation Glow (>350°C) or Cryo Frost (<0°C)
+            drawThermalGlowAndFrost(
+                w = w,
+                h = h,
+                activeTool = activeTool,
+                temperature = temperature,
+                wavePhase = wavePhase
+            )
+
+            // 3. Draw Specific Laboratory Tool & Fluid Contents
+            when (activeTool) {
+                LabToolType.BEAKER -> {
+                    drawBeaker(
+                        w = w,
+                        h = h,
+                        liquidColor = liquidColor,
+                        fillPercent = liquidFillPercent,
+                        wavePhase = wavePhase,
+                        outlineColor = outlineColor,
+                        glassHighlight = glassHighlight,
+                        gridTickColor = gridTickColor,
+                        temperature = temperature,
+                        bubbleProgress = bubbleProgress,
+                        bubbleOffsets = bubbleOffsets,
+                        hasPrecipitate = hasPrecipitate,
+                        hasUnreactedSolid = hasUnreactedSolid,
+                        unreactedSolidColor = unreactedSolidColor,
+                        transparencyAlpha = transparencyAlpha,
+                        isReacting = isReacting
+                    )
+                }
+                LabToolType.ERLENMEYER_FLASK -> {
+                    drawFlask(
+                        w = w,
+                        h = h,
+                        liquidColor = liquidColor,
+                        fillPercent = liquidFillPercent,
+                        wavePhase = wavePhase,
+                        outlineColor = outlineColor,
+                        glassHighlight = glassHighlight,
+                        gridTickColor = gridTickColor,
+                        temperature = temperature,
+                        bubbleProgress = bubbleProgress,
+                        bubbleOffsets = bubbleOffsets,
+                        hasPrecipitate = hasPrecipitate,
+                        hasUnreactedSolid = hasUnreactedSolid,
+                        unreactedSolidColor = unreactedSolidColor,
+                        transparencyAlpha = transparencyAlpha,
+                        isReacting = isReacting
+                    )
+                }
+                LabToolType.TEST_TUBE -> {
+                    drawTestTube(
+                        w = w,
+                        h = h,
+                        liquidColor = liquidColor,
+                        fillPercent = liquidFillPercent,
+                        wavePhase = wavePhase,
+                        outlineColor = outlineColor,
+                        glassHighlight = glassHighlight,
+                        temperature = temperature,
+                        bubbleProgress = bubbleProgress,
+                        bubbleOffsets = bubbleOffsets,
+                        hasPrecipitate = hasPrecipitate,
+                        hasUnreactedSolid = hasUnreactedSolid,
+                        unreactedSolidColor = unreactedSolidColor,
+                        transparencyAlpha = transparencyAlpha,
+                        isReacting = isReacting
+                    )
+                }
+                LabToolType.ELECTRODES -> {
+                    drawElectrolysisCell(
+                        w = w,
+                        h = h,
+                        liquidColor = liquidColor,
+                        fillPercent = liquidFillPercent,
+                        outlineColor = outlineColor,
+                        glassHighlight = glassHighlight,
+                        isElectricityActive = isElectricityActive,
+                        bubbleProgress = bubbleProgress
+                    )
+                }
+                LabToolType.CENTRIFUGE -> {
+                    drawCentrifuge(
+                        w = w,
+                        h = h,
+                        outlineColor = outlineColor,
+                        isCentrifuging = isCentrifuging,
+                        wavePhase = wavePhase
+                    )
+                }
+                LabToolType.TITRATION_BURET -> {
+                    drawTitrationBuret(
+                        w = w,
+                        h = h,
+                        liquidColor = liquidColor,
+                        fillPercent = liquidFillPercent,
+                        outlineColor = outlineColor,
+                        glassHighlight = glassHighlight,
+                        bubbleProgress = bubbleProgress
+                    )
+                }
+                LabToolType.CONDENSER -> {
+                    drawCondenser(
+                        w = w,
+                        h = h,
+                        outlineColor = outlineColor,
+                        glassHighlight = glassHighlight,
+                        wavePhase = wavePhase
+                    )
+                }
+                LabToolType.EVAPORATING_DISH -> {
+                    drawEvaporatingDish(
+                        w = w,
+                        h = h,
+                        liquidColor = liquidColor,
+                        fillPercent = liquidFillPercent,
+                        outlineColor = outlineColor,
+                        glassHighlight = glassHighlight,
+                        temperature = temperature,
+                        bubbleProgress = bubbleProgress
+                    )
+                }
+                LabToolType.CRUCIBLE -> {
+                    drawCrucible(
+                        w = w,
+                        h = h,
+                        outlineColor = outlineColor,
+                        temperature = temperature,
+                        isHeating = isHeating
+                    )
+                }
+                LabToolType.BUNSEN_BURNER -> {
+                    drawBunsenBurnerApparatus(
+                        w = w,
+                        h = h,
+                        outlineColor = outlineColor,
+                        flameFlicker = flameFlicker
+                    )
+                }
+            }
+
+            // 4. Draw Inner Glass Wall Condensation Misting Droplets
+            drawCondensationDroplets(
+                w = w,
+                h = h,
+                activeTool = activeTool,
+                temperature = temperature,
+                wavePhase = wavePhase
+            )
+
+            // 5. 2D Element Particles & Interaction Bonds
+            drawElementParticles(
+                w = w,
+                h = h,
+                particles = particles,
+                potentialInteractions = potentialInteractions
+            )
+
+            // 6. Rising Steam & Vapor Clouds (approaching boiling point or cryo fog)
+            if (temperature > 85.0 || temperature < -40.0) {
+                drawSteamVapor(
+                    w = w,
+                    h = h,
+                    bubbleProgress = bubbleProgress,
+                    steamOffsets = steamOffsets,
+                    isCryoFog = temperature < 0.0
+                )
+            }
+
+            // 7. Sealed System: Rubber Stopper & Calibrated Pressure Gauge (0 - 100 atm)
+            if (isStopperSealed) {
+                drawStopperAndPressureGauge(
+                    w = w,
+                    h = h,
+                    activeTool = activeTool,
+                    pressure = pressure,
+                    isPressureReliefOpen = isPressureReliefOpen,
+                    outlineColor = outlineColor,
+                    wavePhase = wavePhase
+                )
+            }
+
+            // 8. Glassware Safety Hazards (Stress Cracks or Explosive Rupture)
+            if (containerHazardState != ContainerHazardState.INTACT) {
+                drawHazardEffects(
+                    w = w,
+                    h = h,
+                    activeTool = activeTool,
+                    hazardState = containerHazardState,
+                    liquidColor = liquidColor
+                )
+            }
         }
+
+        // Floating Digital Real-Time Sensor HUD Overlay
+        FloatingSensorOverlay(
+            temperature = temperature,
+            pressure = pressure,
+            currentPh = currentPh,
+            isStopperSealed = isStopperSealed,
+            hazardState = containerHazardState,
+            tempUnitCelsius = tempUnitCelsius,
+            pressureUnitAtm = pressureUnitAtm,
+            onToggleTempUnit = onToggleTempUnit,
+            onTogglePressureUnit = onTogglePressureUnit,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 8.dp)
+        )
     }
 }
 
@@ -1135,20 +1229,461 @@ private fun DrawScope.drawSteamVapor(
     w: Float,
     h: Float,
     bubbleProgress: Float,
-    steamOffsets: List<Pair<Float, Float>>
+    steamOffsets: List<Pair<Float, Float>>,
+    isCryoFog: Boolean = false
 ) {
-    val top = h * 0.16f
+    val top = if (isCryoFog) h * 0.70f else h * 0.16f
+    val fogColor = if (isCryoFog) Color(0xFFBAE6FD) else Color.White
     for (i in steamOffsets.indices) {
         val seed = steamOffsets[i]
         val prog = (bubbleProgress + seed.second) % 1f
-        val sx = w * 0.5f + (seed.first - 0.5f) * 120f * (1f + prog)
-        val sy = top - prog * 100f
+        val sx = w * 0.5f + (seed.first - 0.5f) * 140f * (1f + prog)
+        val sy = if (isCryoFog) top + prog * 60f else top - prog * 100f
         val alpha = ((1f - prog) * 0.45f).coerceIn(0f, 1f)
         drawCircle(
-            color = Color.White.copy(alpha = alpha),
+            color = fogColor.copy(alpha = alpha),
             radius = 12f + prog * 18f,
             center = Offset(sx, sy)
         )
+    }
+}
+
+private fun DrawScope.drawThermalApparatus(
+    w: Float,
+    h: Float,
+    apparatus: ThermalApparatus,
+    isHeating: Boolean,
+    flameFlicker: Float,
+    temperature: Double,
+    outlineColor: Color,
+    wavePhase: Float
+) {
+    when (apparatus) {
+        ThermalApparatus.HOT_PLATE -> {
+            val cx = w * 0.5f
+            val plateTop = h * 0.80f
+            val plateBottom = h * 0.89f
+            val plateW = w * 0.68f
+
+            // Ceramic heating surface plate
+            drawRoundRect(
+                color = Color(0xFFF1F5F9),
+                topLeft = Offset(cx - plateW / 2f, plateTop),
+                size = Size(plateW, plateBottom - plateTop),
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(10f, 10f)
+            )
+            drawRoundRect(
+                color = outlineColor,
+                topLeft = Offset(cx - plateW / 2f, plateTop),
+                size = Size(plateW, plateBottom - plateTop),
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(10f, 10f),
+                style = Stroke(width = 3.5f)
+            )
+
+            // Digital control base housing below
+            drawRoundRect(
+                color = Color(0xFF1E293B),
+                topLeft = Offset(cx - plateW * 0.45f, plateBottom),
+                size = Size(plateW * 0.90f, 20f),
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(6f, 6f)
+            )
+
+            // Glowing spiral heating element
+            val coilAlpha = if (temperature > 40.0) ((temperature - 40.0) / 450.0).coerceIn(0.2, 0.95).toFloat() else 0.0f
+            if (coilAlpha > 0f) {
+                val coilColor = if (temperature > 350.0) Color(0xFFF97316) else Color(0xFFDC2626)
+                drawCircle(
+                    color = coilColor.copy(alpha = coilAlpha),
+                    radius = plateW * 0.28f,
+                    center = Offset(cx, (plateTop + plateBottom) / 2f),
+                    style = Stroke(width = 4f)
+                )
+                drawCircle(
+                    color = coilColor.copy(alpha = coilAlpha * 0.85f),
+                    radius = plateW * 0.16f,
+                    center = Offset(cx, (plateTop + plateBottom) / 2f),
+                    style = Stroke(width = 3.5f)
+                )
+            }
+        }
+        ThermalApparatus.BUNSEN_BURNER -> {
+            drawBunsenBurnerApparatus(
+                w = w,
+                h = h,
+                outlineColor = outlineColor,
+                flameFlicker = flameFlicker
+            )
+        }
+        ThermalApparatus.ICE_BATH, ThermalApparatus.DRY_ICE_BATH, ThermalApparatus.LIQUID_NITROGEN_BATH -> {
+            val tubLeft = w * 0.12f
+            val tubRight = w * 0.88f
+            val tubTop = h * 0.66f
+            val tubBottom = h * 0.88f
+            val bathColor = when (apparatus) {
+                ThermalApparatus.LIQUID_NITROGEN_BATH -> Color(0xFF0284C7).copy(alpha = 0.50f)
+                ThermalApparatus.DRY_ICE_BATH -> Color(0xFF38BDF8).copy(alpha = 0.40f)
+                else -> Color(0xFF7DD3FC).copy(alpha = 0.35f)
+            }
+
+            // Basin bath tub
+            drawRoundRect(
+                color = bathColor,
+                topLeft = Offset(tubLeft, tubTop),
+                size = Size(tubRight - tubLeft, tubBottom - tubTop),
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(16f, 16f)
+            )
+            drawRoundRect(
+                color = outlineColor,
+                topLeft = Offset(tubLeft, tubTop),
+                size = Size(tubRight - tubLeft, tubBottom - tubTop),
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(16f, 16f),
+                style = Stroke(width = 4f)
+            )
+
+            // Ice cubes / cryo dry-ice chunks floating in slurry
+            val cubeCount = 7
+            for (i in 0 until cubeCount) {
+                val cx = tubLeft + 16f + (i * 32f) + sin(wavePhase + i) * 3f
+                val cy = tubTop + 14f + ((i % 3) * 16f)
+                drawRoundRect(
+                    color = Color.White.copy(alpha = 0.80f),
+                    topLeft = Offset(cx, cy),
+                    size = Size(20f, 18f),
+                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(4f, 4f)
+                )
+            }
+        }
+        ThermalApparatus.NONE -> {
+            if (isHeating) {
+                drawBurnerFlame(
+                    centerX = w * 0.5f,
+                    baseY = h * 0.86f,
+                    flicker = flameFlicker,
+                    flameHeight = h * 0.16f * flameFlicker
+                )
+            }
+        }
+    }
+}
+
+private fun DrawScope.drawThermalGlowAndFrost(
+    w: Float,
+    h: Float,
+    activeTool: LabToolType,
+    temperature: Double,
+    wavePhase: Float
+) {
+    if (temperature > 350.0) {
+        val glowAlpha = ((temperature - 350.0) / 800.0).coerceIn(0.15, 0.90).toFloat()
+        val glowColor = when {
+            temperature > 950.0 -> Color(0xFFFEF08A) // incandescent white-yellow
+            temperature > 650.0 -> Color(0xFFF97316) // fiery radiant orange
+            else -> Color(0xFFDC2626) // deep cherry red
+        }
+        drawCircle(
+            color = glowColor.copy(alpha = glowAlpha * 0.35f),
+            radius = w * 0.40f,
+            center = Offset(w * 0.5f, h * 0.56f)
+        )
+        drawCircle(
+            color = glowColor.copy(alpha = glowAlpha * 0.55f),
+            radius = w * 0.28f,
+            center = Offset(w * 0.5f, h * 0.58f)
+        )
+    }
+
+    if (temperature <= 0.0) {
+        val frostAlpha = ((-temperature) / 100.0).coerceIn(0.2, 0.95).toFloat()
+        // Frost rime around bottom of glass
+        drawRoundRect(
+            color = Color(0xFFE0F2FE).copy(alpha = frostAlpha * 0.65f),
+            topLeft = Offset(w * 0.22f, h * 0.68f),
+            size = Size(w * 0.56f, h * 0.14f),
+            cornerRadius = androidx.compose.ui.geometry.CornerRadius(16f, 16f),
+            style = Stroke(width = 8f)
+        )
+        // Ice crystal needles
+        for (i in 0..12) {
+            val fx = w * 0.24f + (i * 22f)
+            val fy = h * 0.78f - (frostAlpha * 18f) - sin(wavePhase + i) * 4f
+            drawLine(
+                color = Color.White.copy(alpha = frostAlpha * 0.85f),
+                start = Offset(fx, h * 0.80f),
+                end = Offset(fx, fy),
+                strokeWidth = 2.5f,
+                cap = StrokeCap.Round
+            )
+        }
+    }
+}
+
+private fun DrawScope.drawCondensationDroplets(
+    w: Float,
+    h: Float,
+    activeTool: LabToolType,
+    temperature: Double,
+    wavePhase: Float
+) {
+    if (temperature > 60.0 || activeTool == LabToolType.CONDENSER) {
+        val dropCount = 10
+        for (i in 0 until dropCount) {
+            val dx = w * 0.30f + ((i * 37f) % (w * 0.40f))
+            val dy = h * 0.28f + ((i * 43f) % (h * 0.28f)) + sin(wavePhase + i) * 3f
+            drawCircle(
+                color = Color.White.copy(alpha = 0.65f),
+                radius = 2.8f + (i % 3) * 1.2f,
+                center = Offset(dx, dy)
+            )
+        }
+    }
+}
+
+private fun DrawScope.drawStopperAndPressureGauge(
+    w: Float,
+    h: Float,
+    activeTool: LabToolType,
+    pressure: Double,
+    isPressureReliefOpen: Boolean,
+    outlineColor: Color,
+    wavePhase: Float
+) {
+    val (mouthX, mouthY, mouthW) = when (activeTool) {
+        LabToolType.ERLENMEYER_FLASK -> Triple(w * 0.5f, h * 0.16f, w * 0.14f)
+        LabToolType.TEST_TUBE -> Triple(w * 0.5f, h * 0.16f, w * 0.22f)
+        LabToolType.CRUCIBLE -> Triple(w * 0.5f, h * 0.38f, w * 0.38f)
+        else -> Triple(w * 0.5f, h * 0.22f, w * 0.56f)
+    }
+
+    // 1. Tapered Black Rubber Stopper Plug
+    val stopperTop = mouthY - 14f
+    val stopperBottom = mouthY + 12f
+    val stopperPath = Path().apply {
+        moveTo(mouthX - mouthW / 2f + 4f, stopperBottom)
+        lineTo(mouthX - mouthW / 2f - 4f, stopperTop)
+        lineTo(mouthX + mouthW / 2f + 4f, stopperTop)
+        lineTo(mouthX + mouthW / 2f - 4f, stopperBottom)
+        close()
+    }
+    drawPath(stopperPath, color = Color(0xFF1E293B)) // Black rubber
+    drawPath(stopperPath, color = outlineColor, style = Stroke(width = 3.5f))
+
+    // 2. Brass vertical tube stem
+    val stemTop = stopperTop - 32f
+    drawLine(color = Color(0xFFD97706), start = Offset(mouthX, stopperTop), end = Offset(mouthX, stemTop), strokeWidth = 5.5f)
+
+    // 3. Circular Pressure Gauge Dial
+    val gaugeRadius = 26f
+    val gaugeCenter = Offset(mouthX, stemTop - gaugeRadius)
+    // Outer chrome ring
+    drawCircle(color = Color(0xFFE2E8F0), radius = gaugeRadius + 4f, center = gaugeCenter)
+    drawCircle(color = outlineColor, radius = gaugeRadius + 4f, center = gaugeCenter, style = Stroke(width = 3f))
+    // Dial face
+    drawCircle(color = Color.White, radius = gaugeRadius, center = gaugeCenter)
+
+    // Colored sectors (Green 0-3 atm, Yellow 3-5 atm, Red >5 atm)
+    drawArc(
+        color = Color(0xFF10B981),
+        startAngle = 135f,
+        sweepAngle = 100f,
+        useCenter = false,
+        topLeft = Offset(gaugeCenter.x - gaugeRadius + 4f, gaugeCenter.y - gaugeRadius + 4f),
+        size = Size((gaugeRadius - 4f) * 2, (gaugeRadius - 4f) * 2),
+        style = Stroke(width = 4f)
+    )
+    drawArc(
+        color = Color(0xFFF59E0B),
+        startAngle = 235f,
+        sweepAngle = 60f,
+        useCenter = false,
+        topLeft = Offset(gaugeCenter.x - gaugeRadius + 4f, gaugeCenter.y - gaugeRadius + 4f),
+        size = Size((gaugeRadius - 4f) * 2, (gaugeRadius - 4f) * 2),
+        style = Stroke(width = 4f)
+    )
+    drawArc(
+        color = Color(0xFFEF4444),
+        startAngle = 295f,
+        sweepAngle = 110f,
+        useCenter = false,
+        topLeft = Offset(gaugeCenter.x - gaugeRadius + 4f, gaugeCenter.y - gaugeRadius + 4f),
+        size = Size((gaugeRadius - 4f) * 2, (gaugeRadius - 4f) * 2),
+        style = Stroke(width = 4f)
+    )
+
+    // Rotating Needle
+    val normP = (pressure / 25.0).coerceIn(0.0, 1.0)
+    val angleRad = (135.0 + normP * 270.0) * (kotlin.math.PI / 180.0)
+    val needleX = gaugeCenter.x + (gaugeRadius - 6f) * cos(angleRad).toFloat()
+    val needleY = gaugeCenter.y + (gaugeRadius - 6f) * sin(angleRad).toFloat()
+    drawLine(color = Color(0xFFDC2626), start = gaugeCenter, end = Offset(needleX, needleY), strokeWidth = 2.5f)
+    drawCircle(color = Color.Black, radius = 3.5f, center = gaugeCenter)
+
+    // Pressure Relief Valve on side
+    val valveX = mouthX + mouthW / 2f + 12f
+    val valveY = stopperTop + 6f
+    drawLine(color = Color(0xFFDC2626), start = Offset(mouthX + mouthW / 2f - 2f, valveY), end = Offset(valveX, valveY), strokeWidth = 4.5f)
+    drawCircle(color = if (isPressureReliefOpen) Color(0xFF10B981) else Color(0xFFDC2626), radius = 5.5f, center = Offset(valveX, valveY))
+
+    // Escaping vapor hissing jet if relief valve is open
+    if (isPressureReliefOpen) {
+        for (v in 0..4) {
+            val vx = valveX + 6f + (v * 14f)
+            val vy = valveY + sin(wavePhase * 3f + v) * 5f
+            drawCircle(
+                color = Color.White.copy(alpha = 0.75f - (v * 0.12f)),
+                radius = 4f + v * 3.5f,
+                center = Offset(vx, vy)
+            )
+        }
+    }
+}
+
+private fun DrawScope.drawHazardEffects(
+    w: Float,
+    h: Float,
+    activeTool: LabToolType,
+    hazardState: ContainerHazardState,
+    liquidColor: Color
+) {
+    if (hazardState == ContainerHazardState.CRACKED) {
+        // Spiderweb stress fracture lines across glass
+        val cx = w * 0.5f
+        val cy = h * 0.55f
+        val crackColor = Color.White.copy(alpha = 0.88f)
+        drawLine(color = crackColor, start = Offset(cx, cy), end = Offset(cx - 50f, cy - 60f), strokeWidth = 2.8f)
+        drawLine(color = crackColor, start = Offset(cx - 20f, cy - 25f), end = Offset(cx - 70f, cy - 10f), strokeWidth = 2f)
+        drawLine(color = crackColor, start = Offset(cx, cy), end = Offset(cx + 60f, cy - 40f), strokeWidth = 2.8f)
+        drawLine(color = crackColor, start = Offset(cx + 30f, cy - 20f), end = Offset(cx + 70f, cy + 30f), strokeWidth = 2f)
+        drawLine(color = crackColor, start = Offset(cx, cy), end = Offset(cx - 30f, cy + 70f), strokeWidth = 2.8f)
+        drawLine(color = crackColor, start = Offset(cx, cy), end = Offset(cx + 40f, cy + 60f), strokeWidth = 2.5f)
+    } else if (hazardState == ContainerHazardState.RUPTURED_EXPLODED) {
+        // Catastrophic Explosion!
+        drawCircle(color = Color(0xFFEF4444).copy(alpha = 0.35f), radius = w * 0.45f, center = Offset(w * 0.5f, h * 0.55f))
+        drawCircle(color = Color(0xFFFBBF24).copy(alpha = 0.50f), radius = w * 0.28f, center = Offset(w * 0.5f, h * 0.55f))
+
+        // Flying shattered glass shards
+        val shards = listOf(
+            Triple(w * 0.25f, h * 0.40f, 20f),
+            Triple(w * 0.75f, h * 0.35f, 24f),
+            Triple(w * 0.20f, h * 0.65f, 28f),
+            Triple(w * 0.82f, h * 0.60f, 22f),
+            Triple(w * 0.35f, h * 0.25f, 16f),
+            Triple(w * 0.65f, h * 0.22f, 18f)
+        )
+        shards.forEach { (sx, sy, sz) ->
+            val shard = Path().apply {
+                moveTo(sx, sy)
+                lineTo(sx + sz, sy - sz * 0.5f)
+                lineTo(sx + sz * 0.6f, sy + sz)
+                close()
+            }
+            drawPath(shard, color = Color.White.copy(alpha = 0.90f))
+            drawPath(shard, color = Color(0xFF0F172A), style = Stroke(width = 2f))
+        }
+
+        // Spilled chemical puddle at bottom of workbench
+        drawOval(
+            color = liquidColor.copy(alpha = 0.85f),
+            topLeft = Offset(w * 0.15f, h * 0.80f),
+            size = Size(w * 0.70f, 32f)
+        )
+    }
+}
+
+@Composable
+private fun FloatingSensorOverlay(
+    temperature: Double,
+    pressure: Double,
+    currentPh: Double,
+    isStopperSealed: Boolean,
+    hazardState: ContainerHazardState,
+    tempUnitCelsius: Boolean,
+    pressureUnitAtm: Boolean,
+    onToggleTempUnit: () -> Unit,
+    onTogglePressureUnit: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val phColor = when {
+        currentPh < 6.0 -> Color(0xFFEF4444)
+        currentPh > 8.0 -> Color(0xFF3B82F6)
+        else -> Color(0xFF10B981)
+    }
+
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = Color(0xFF0F172A).copy(alpha = 0.85f),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF334155)),
+        modifier = modifier
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Temperature badge (Clickable toggle °C/K)
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable { onToggleTempUnit() }
+                    .padding(horizontal = 4.dp, vertical = 2.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
+                Text("🌡️", fontSize = 11.sp)
+                Text(
+                    text = if (tempUnitCelsius) "${temperature.roundToInt()}°C" else "${(temperature + 273.15).roundToInt()} K",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace,
+                    color = if (temperature > 100.0) Color(0xFFF97316) else if (temperature < 0.0) Color(0xFF38BDF8) else Color.White
+                )
+            }
+
+            Text("•", fontSize = 9.sp, color = Color(0xFF64748B))
+
+            // Pressure badge (Clickable toggle atm/kPa)
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable { onTogglePressureUnit() }
+                    .padding(horizontal = 4.dp, vertical = 2.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
+                Text("⚡", fontSize = 11.sp)
+                Text(
+                    text = if (pressureUnitAtm) "${String.format("%.1f", pressure)} atm" else "${String.format("%.0f", pressure * 101.325)} kPa",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace,
+                    color = if (pressure > 3.0) Color(0xFFEF4444) else Color(0xFF93C5FD)
+                )
+            }
+
+            Text("•", fontSize = 9.sp, color = Color(0xFF64748B))
+
+            // pH dot
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                Box(modifier = Modifier.size(7.dp).clip(CircleShape).background(phColor))
+                Text(
+                    text = "pH ${String.format("%.1f", currentPh)}",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace,
+                    color = phColor
+                )
+            }
+
+            Text("•", fontSize = 9.sp, color = Color(0xFF64748B))
+
+            // Stopper / Sealed Indicator
+            Text(
+                text = if (isStopperSealed) "🔒 SEALED" else "🔓 OPEN",
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                fontSize = 10.sp,
+                color = if (isStopperSealed) Color(0xFFFBBF24) else Color(0xFF94A3B8)
+            )
+        }
     }
 }
 

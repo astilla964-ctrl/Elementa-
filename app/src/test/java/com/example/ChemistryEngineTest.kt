@@ -259,5 +259,134 @@ class ChemistryEngineTest {
         assertTrue(blended.hasUnreactedSolid)
         assertTrue(blended.hasSettledPrecipitate)
     }
+
+    @Test
+    fun `thermal activation energy requires heat threshold before reaction is ready`() {
+        engine.clear()
+        // Reaction requiring high temperature: C + O2 -> CO2 (minTemp = 400°C)
+        val c = ChemicalCatalog.getChemical("C")!!
+        val o = ChemicalCatalog.getChemical("O")!!
+
+        engine.spawnElement(c)
+        engine.spawnElement(o)
+
+        // At 25°C room temperature
+        engine.updateEnvironment(
+            tool = LabToolType.BEAKER,
+            temperature = 25.0,
+            heating = false,
+            electricity = false,
+            centrifuging = false
+        )
+
+        var interactions = engine.detectPotentialInteractions()
+        val cCombustion = interactions.find { it.reaction.reactantIds.contains("C") && it.reaction.reactantIds.contains("O") }
+        if (cCombustion != null) {
+            // Below activation temperature
+            assertFalse(cCombustion.isActivationEnergyMet)
+            assertTrue(cCombustion.readinessPercentage < 1.0f)
+            assertTrue(cCombustion.conditionSummary.contains("Heat", true))
+
+            // Heat above 400°C with Bunsen Burner
+            engine.updateEnvironment(
+                tool = LabToolType.BEAKER,
+                temperature = 500.0,
+                heating = true,
+                electricity = false,
+                centrifuging = false
+            )
+            interactions = engine.detectPotentialInteractions()
+            val heated = interactions.find { it.reaction.id == cCombustion.reaction.id }
+            assertNotNull(heated)
+            assertTrue(heated!!.isActivationEnergyMet)
+            assertEquals(1.0f, heated.readinessPercentage, 0.01f)
+        }
+    }
+
+    @Test
+    fun `dynamic phase transitions compute melting and boiling according to temperature`() {
+        engine.clear()
+        val water = ChemicalCatalog.getChemical("H2O")!!
+        val p = engine.spawnElement(water, x = 0.5f, y = 0.6f)
+
+        // At standard room temp 25°C, water is liquid
+        assertEquals(ParticlePhase.LIQUID, p.phase)
+
+        // Cool down to -10°C (below mp 0°C) -> freezes into solid
+        engine.updateEnvironment(
+            tool = LabToolType.BEAKER,
+            temperature = -10.0,
+            heating = false,
+            electricity = false,
+            centrifuging = false
+        )
+        engine.step(0.016f)
+        assertEquals(ParticlePhase.SOLID, p.phase)
+
+        // Heat up to 120°C (above bp 100°C) -> boils into gas/vapor
+        engine.updateEnvironment(
+            tool = LabToolType.BEAKER,
+            temperature = 120.0,
+            heating = true,
+            electricity = false,
+            centrifuging = false
+        )
+        engine.step(0.016f)
+        assertEquals(ParticlePhase.GAS, p.phase)
+    }
+
+    @Test
+    fun `cryogenic liquid nitrogen temperature freezes liquids and slows brownian motion`() {
+        engine.clear()
+        val ethanol = ChemicalCatalog.getChemical("CH3CH2OH") ?: ChemicalCatalog.getChemical("H2O")!!
+        val p = engine.spawnElement(ethanol, x = 0.5f, y = 0.6f)
+
+        // Cryogenic liquid nitrogen bath at -196°C
+        engine.updateEnvironment(
+            tool = LabToolType.BEAKER,
+            temperature = -196.0,
+            heating = false,
+            electricity = false,
+            centrifuging = false
+        )
+        engine.step(0.016f)
+
+        // Solidified at -196°C
+        assertEquals(ParticlePhase.SOLID, p.phase)
+        assertTrue(p.localizedTemp <= -190.0)
+    }
+
+    @Test
+    fun `sealed stopper containment affects particle boundaries`() {
+        engine.clear()
+        val helium = ChemicalCatalog.getChemical("He")!!
+        val gasParticle = engine.spawnElement(helium, x = 0.5f, y = 0.1f)
+        gasParticle.vy = -0.5f // Rising upwards
+
+        // When open mouth, gas escapes through top
+        engine.updateEnvironment(
+            tool = LabToolType.BEAKER,
+            temperature = 25.0,
+            heating = false,
+            electricity = false,
+            centrifuging = false,
+            stopperSealed = false
+        )
+        engine.step(0.016f)
+
+        // When sealed with stopper, gas bounces back down off stopper ceiling
+        engine.updateEnvironment(
+            tool = LabToolType.BEAKER,
+            temperature = 25.0,
+            heating = false,
+            electricity = false,
+            centrifuging = false,
+            stopperSealed = true
+        )
+        gasParticle.y = 0.18f
+        gasParticle.vy = -0.4f
+        engine.step(0.016f)
+        assertTrue("Gas velocity should deflect downwards off sealed stopper", gasParticle.vy >= 0f)
+    }
 }
 

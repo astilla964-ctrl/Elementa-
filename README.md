@@ -19,6 +19,12 @@
 
 ## ✨ Features
 
+- **🔥 Environmental & Thermodynamics Simulation Engine**:
+  - *Interactive Heating & Cooling Apparatuses*: Bunsen Burner with adjustable roaring gas flame (up to 1,500°C), Digital Hot Plate (up to 550°C), Ice Water Bath (0°C), Dry Ice / Acetone Bath (-78.5°C), and Cryogenic Liquid Nitrogen Dewar (-196°C).
+  - *Pressure & Sealed Atmosphere Equipment*: Gastight rubber stopper with calibrated dial pressure gauge (0 - 100 atm), quick-action pressure relief valve, vacuum pump (<0.1 atm), and gas compressor.
+  - *Thermodynamic Physics & Activation Logic*: Calculates thermal and pressure states dynamically before triggering reactions. Enforces Activation Energy ($E_a$) heat thresholds, dynamic phase transitions (melting, freezing, boiling, condensation), and realistic exothermic ($\Delta H < 0$) / endothermic ($\Delta H > 0$) enthalpy balance.
+  - *Glassware Safety & Container Hazards*: Simulates physical limits of laboratory containers including thermal shock cracking and overpressurization container explosions ($PV = nRT > 5\text{ atm}$) with shattered glass shards, workbench liquid spills, and 1-tap glassware replacement.
+  - *Visual Thermal Rendering & Live Telemetry*: High-temperature glass glow heat maps (>500°C red glow, >900°C bright incandescent orange/yellow), steam/vapor effervescence, condensation misting, floating container digital sensor badges, and live interactive heat curve graphs (Temp vs. Time) with 60-sample telemetry buffering.
 - **🔬 118 Periodic Elements & 165+ Extended Compounds**: Complete physical profiles including molar mass, STP state, density, pH, GHS/NFPA hazard classifications, and boiling/melting points.
 - **⚡ 238 Fully-Simulated Reactions**: Acid-base neutralizations, coordination complexes, combustion reactions, single & double displacements, organic syntheses, pyrotechnics, and electrochemical electrolysis.
 - **🎨 2D Physics Particle Engine**: Real-time particle canvas rendering Brownian agitation, buoyancy, phase transitions, and visual particle archetypes (`bubble`, `vapor`, `crystal`, `fluid`).
@@ -37,6 +43,34 @@
 ## 📜 Automatic Changelog
 
 > *This section is automatically updated by GitHub Actions upon each new release tag.*
+
+### [v1.5.0] — 2026-09-29
+#### 🚀 Added
+- **Environmental & Thermodynamics Simulation Engine**:
+  - *Interactive Heating & Cooling Apparatuses*:
+    - Digital Hot Plate with adjustable thermostatic surface heating up to 550°C.
+    - Bunsen Burner with roaring blue flame output from 25°C to 1,500°C.
+    - Ice Water Bath (0°C), Dry Ice / Acetone Bath (-78.5°C), and Liquid Nitrogen Dewar (-196°C) for deep thermal quenching.
+    - Temperature slider adjusting heat output from -196°C to 1,500°C with quick-jump presets (`-196°C Cryo`, `0°C Ice`, `25°C Room`, `100°C Boil`, `450°C Flame`, `1000°C Glow`).
+  - *Pressure & Sealed System Equipment*:
+    - Gastight rubber stopper with calibrated dial pressure gauge (0 - 100 atm).
+    - Pressure relief valve to quickly vent accumulated pressure down to 1.0 atm.
+    - Vacuum pump to draw deep vacuums (<0.1 atm) and gas compressor to pressurize sealed systems.
+  - *Dynamic Thermodynamic Physics & Activation Logic*:
+    - *Activation Energy ($E_a$) Thresholds*: Reactions do not initiate until thermal energy reaches or exceeds reaction activation temperature ($T_{act}$), displaying real-time activation alerts (e.g., `Heat Required: Reached 350°C / Target 500°C (70% Activation Energy)`).
+    - *Dynamic Phase Transitions*: Solutes and solvents dynamically melt at `meltingPointC` and boil into vapor at `boilingPointC`. Condensers condense vapor back into liquid.
+    - *Enthalpy Balance*: Exothermic reactions ($\Delta H < 0$) automatically trigger internal container temperature spikes; endothermic reactions ($\Delta H > 0$) absorb ambient heat and rapidly cool vessels unless heated.
+    - *Brownian Particle Agitation*: Particle velocity dynamically scales with $\sqrt{T_{Kelvin}}$, causing vigorous agitation at high heat and freezing at cryogenic temperatures.
+  - *Glassware Safety & Container Hazard Mechanics*:
+    - *Thermal Shock & Fractures*: Heating glassware above safe limits (>500°C for beakers, >450°C for test tubes) triggers thermal stress warnings and glass cracking.
+    - *Overpressurization Explosions*: Reactions evolving gases inside sealed vessels without pressure relief increase internal pressure ($PV = nRT$). Exceeding container burst ratings (>5.0 atm) triggers a catastrophic glass explosion destroying the container, spilling chemicals, and requiring a 1-tap "Clean Up & Replace Glassware" action.
+  - *Visual Thermal States & Live Telemetry Charting*:
+    - Glass glow heat maps (>500°C dark red glow, >900°C brilliant yellow/orange incandescence).
+    - Rising steam/vapor effervescence and condensation droplets on container walls.
+    - Real-time floating digital overlay displaying temperature ($T$ in °C or K), pressure ($P$ in atm or kPa), and pH.
+    - Interactive live heat curves (Temp vs. Time and Pressure vs. Time) displayed in a 60-sample telemetry buffer within the quantitative log drawer and container telemetry modal sheet.
+
+---
 
 ### [v1.4.0] — 2026-09-29
 #### 🚀 Added

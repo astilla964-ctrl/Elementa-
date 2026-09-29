@@ -49,12 +49,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.ChemicalCatalog
 import com.example.data.model.StoichiometryResult
+import com.example.data.model.ThermodynamicReading
 
 @Composable
 fun QuantitativeLogDrawer(
     stoichiometryResult: StoichiometryResult?,
     onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    readings: List<ThermodynamicReading> = emptyList()
 ) {
     if (stoichiometryResult == null) return
 
@@ -348,6 +350,17 @@ fun QuantitativeLogDrawer(
                                 }
                             }
                         }
+                    }
+
+                    // 5. Interactive Thermodynamic Heat Curves (Temp vs. Time)
+                    if (readings.isNotEmpty()) {
+                        Text(
+                            text = "Thermodynamic Heat Curve & Energy Balance:",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        ThermalCurveChart(readings = readings)
                     }
                 }
             }

@@ -12,8 +12,12 @@ import com.example.data.model.Chemical
 import com.example.data.model.ChemicalCatalog
 import com.example.data.model.ChemicalCategory
 import com.example.data.model.Compound
+import com.example.data.model.ContainerHazardState
 import com.example.data.model.LabToolType
+import com.example.data.model.PressureMode
 import com.example.data.model.Reaction
+import com.example.data.model.ThermalApparatus
+import com.example.data.model.ThermodynamicReading
 import com.example.data.model.toCompound
 import com.example.data.repository.LabRepository
 import com.example.engine.ChemistryEngine
@@ -25,6 +29,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.pow
 import kotlin.math.roundToInt
 
 enum class AppScreen {
@@ -180,6 +187,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _dispensedChemicals.value = emptyMap()
         _latestStoichiometryResult.value = null
         _currentTemperature.value = 25.0
+        _targetTemperature.value = 25.0
+        _thermalApparatus.value = ThermalApparatus.NONE
+        _isStopperSealed.value = false
+        _isPressureReliefOpen.value = false
+        _vacuumPumpActive.value = false
+        _compressorActive.value = false
+        _currentPressure.value = 1.0
+        _internalGasMoles.value = 0.0
+        _containerHazardState.value = ContainerHazardState.INTACT
+        _hazardMessage.value = null
         _currentPh.value = 7.0
         _isHeating.value = false
         _isElectricityActive.value = false
@@ -191,7 +208,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _reactionAlert.value = null
         _liquidColorHex.value = 0xAA38BDF8
         chemistryEngine.clear()
-        chemistryEngine.updateEnvironment(_activeTool.value, 25.0, false, false, false)
+        chemistryEngine.updateEnvironment(_activeTool.value, 25.0, false, false, false, false)
     }
 
     fun loadReactionReactants(reaction: Reaction) {
@@ -244,23 +261,139 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         recalculateLiquidProperties()
     }
 
-    // Temperature & Pressure
+    // Temperature & Thermodynamics State
     private val _currentTemperature = MutableStateFlow(25.0)
     val currentTemperature: StateFlow<Double> = _currentTemperature.asStateFlow()
 
+    private val _targetTemperature = MutableStateFlow(25.0)
+    val targetTemperature: StateFlow<Double> = _targetTemperature.asStateFlow()
+
+    private val _thermalApparatus = MutableStateFlow(ThermalApparatus.NONE)
+    val thermalApparatus: StateFlow<ThermalApparatus> = _thermalApparatus.asStateFlow()
+
+    private val _currentPressure = MutableStateFlow(1.0)
+    val currentPressure: StateFlow<Double> = _currentPressure.asStateFlow()
+
+    private val _isStopperSealed = MutableStateFlow(false)
+    val isStopperSealed: StateFlow<Boolean> = _isStopperSealed.asStateFlow()
+
+    private val _isPressureReliefOpen = MutableStateFlow(false)
+    val isPressureReliefOpen: StateFlow<Boolean> = _isPressureReliefOpen.asStateFlow()
+
+    private val _vacuumPumpActive = MutableStateFlow(false)
+    val vacuumPumpActive: StateFlow<Boolean> = _vacuumPumpActive.asStateFlow()
+
+    private val _compressorActive = MutableStateFlow(false)
+    val compressorActive: StateFlow<Boolean> = _compressorActive.asStateFlow()
+
+    private val _internalGasMoles = MutableStateFlow(0.0)
+    val internalGasMoles: StateFlow<Double> = _internalGasMoles.asStateFlow()
+
+    private val _containerHazardState = MutableStateFlow(ContainerHazardState.INTACT)
+    val containerHazardState: StateFlow<ContainerHazardState> = _containerHazardState.asStateFlow()
+
+    private val _hazardMessage = MutableStateFlow<String?>(null)
+    val hazardMessage: StateFlow<String?> = _hazardMessage.asStateFlow()
+
+    private val _tempUnitCelsius = MutableStateFlow(true)
+    val tempUnitCelsius: StateFlow<Boolean> = _tempUnitCelsius.asStateFlow()
+
+    private val _pressureUnitAtm = MutableStateFlow(true)
+    val pressureUnitAtm: StateFlow<Boolean> = _pressureUnitAtm.asStateFlow()
+
+    private val _thermalHistory = MutableStateFlow<List<ThermodynamicReading>>(emptyList())
+    val thermalHistory: StateFlow<List<ThermodynamicReading>> = _thermalHistory.asStateFlow()
+
+    private var telemetryTickCounter = 0
+
+    fun toggleTempUnit() {
+        _tempUnitCelsius.value = !_tempUnitCelsius.value
+    }
+
+    fun togglePressureUnit() {
+        _pressureUnitAtm.value = !_pressureUnitAtm.value
+    }
+
+    fun selectThermalApparatus(apparatus: ThermalApparatus) {
+        _thermalApparatus.value = apparatus
+        _targetTemperature.value = apparatus.defaultTargetTemp
+        _isHeating.value = apparatus == ThermalApparatus.BUNSEN_BURNER || apparatus == ThermalApparatus.HOT_PLATE
+        recalculateLiquidProperties()
+    }
+
+    fun setTargetTemperature(temp: Double) {
+        val clamped = temp.coerceIn(-196.0, 1500.0)
+        _targetTemperature.value = clamped
+        if (clamped > 50.0 && _thermalApparatus.value == ThermalApparatus.NONE) {
+            _thermalApparatus.value = if (clamped > 550.0) ThermalApparatus.BUNSEN_BURNER else ThermalApparatus.HOT_PLATE
+            _isHeating.value = true
+        } else if (clamped < 0.0 && _thermalApparatus.value == ThermalApparatus.NONE) {
+            _thermalApparatus.value = if (clamped < -78.5) ThermalApparatus.LIQUID_NITROGEN_BATH else ThermalApparatus.ICE_BATH
+            _isHeating.value = false
+        }
+    }
+
     fun setTemperature(temp: Double) {
-        _currentTemperature.value = temp
-        if (temp > 50.0 && !_isHeating.value) {
+        val clamped = temp.coerceIn(-196.0, 1500.0)
+        _currentTemperature.value = clamped
+        _targetTemperature.value = clamped
+        if (clamped > 50.0 && !_isHeating.value) {
             _isHeating.value = true
         }
         recalculateLiquidProperties()
     }
 
-    private val _currentPressure = MutableStateFlow(1.0)
-    val currentPressure: StateFlow<Double> = _currentPressure.asStateFlow()
-
     fun setPressure(atm: Double) {
-        _currentPressure.value = atm
+        _currentPressure.value = atm.coerceIn(0.0, 100.0)
+    }
+
+    fun toggleStopperSealed() {
+        val nextSealed = !_isStopperSealed.value
+        _isStopperSealed.value = nextSealed
+        if (!nextSealed) {
+            _isPressureReliefOpen.value = false
+            _vacuumPumpActive.value = false
+            _compressorActive.value = false
+            _currentPressure.value = 1.0
+            _internalGasMoles.value = 0.0
+        }
+        recalculateLiquidProperties()
+    }
+
+    fun togglePressureRelief() {
+        _isPressureReliefOpen.value = !_isPressureReliefOpen.value
+    }
+
+    fun toggleVacuumPump() {
+        if (!_isStopperSealed.value) _isStopperSealed.value = true
+        _vacuumPumpActive.value = !_vacuumPumpActive.value
+        if (_vacuumPumpActive.value) {
+            _compressorActive.value = false
+        }
+    }
+
+    fun toggleCompressor() {
+        if (!_isStopperSealed.value) _isStopperSealed.value = true
+        _compressorActive.value = !_compressorActive.value
+        if (_compressorActive.value) {
+            _vacuumPumpActive.value = false
+        }
+    }
+
+    fun replaceGlassware() {
+        _containerHazardState.value = ContainerHazardState.INTACT
+        _hazardMessage.value = null
+        _currentPressure.value = 1.0
+        _internalGasMoles.value = 0.0
+        _isStopperSealed.value = false
+        _isPressureReliefOpen.value = false
+        _vacuumPumpActive.value = false
+        _compressorActive.value = false
+        _currentTemperature.value = 25.0
+        _targetTemperature.value = 25.0
+        _thermalApparatus.value = ThermalApparatus.NONE
+        _isHeating.value = false
+        clearWorkbench()
     }
 
     private val _isHeating = MutableStateFlow(false)
@@ -269,10 +402,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun toggleHeating() {
         val newState = !_isHeating.value
         _isHeating.value = newState
-        if (newState && _currentTemperature.value < 100.0) {
-            _currentTemperature.value = 115.0
-        } else if (!newState && _currentTemperature.value > 60.0) {
-            _currentTemperature.value = 25.0
+        if (newState) {
+            _thermalApparatus.value = ThermalApparatus.BUNSEN_BURNER
+            _targetTemperature.value = 350.0
+            if (_currentTemperature.value < 100.0) {
+                _currentTemperature.value = 115.0
+            }
+        } else {
+            _thermalApparatus.value = ThermalApparatus.NONE
+            _targetTemperature.value = 25.0
+            if (_currentTemperature.value > 60.0) {
+                _currentTemperature.value = 25.0
+            }
         }
         recalculateLiquidProperties()
     }
@@ -395,6 +536,26 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         if (matchingReaction != null) {
             executeReaction(matchingReaction)
         } else {
+            // Check if reaction exists but requires higher thermal activation energy
+            val potentialRx = ChemicalCatalog.REACTIONS.find { rx ->
+                rx.reactantIds.all { rId ->
+                    val norm = ChemicalCatalog.normalizeReactant(rId)
+                    rId in reactants || norm in reactants ||
+                    reactants.any { it.equals(rId, true) || it.equals(norm, true) }
+                }
+            }
+
+            if (potentialRx != null && _currentTemperature.value < potentialRx.minTemp) {
+                val cur = _currentTemperature.value.roundToInt()
+                val req = potentialRx.minTemp.roundToInt()
+                val pct = ((_currentTemperature.value / potentialRx.minTemp) * 100).toInt().coerceIn(0, 99)
+                _reactionAlert.value = ReactionAlert(
+                    equation = "${potentialRx.equation} (Activation Energy Required)",
+                    observation = "Heat Required: Reached ${cur}°C / Target ${req}°C ($pct% Activation Energy). Thermal activation threshold not met. Use the Bunsen Burner or Hot Plate to heat the vessel to at least ${req}°C."
+                )
+                return
+            }
+
             // No matching reaction under current conditions
             val temp = _currentTemperature.value.roundToInt()
             val hint = if (temp < 100 && ("C" in reactants || "Fe" in reactants || "S" in reactants)) {
@@ -422,9 +583,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             )
             _latestStoichiometryResult.value = stoich
 
-            // 2. Thermodynamic temperature adjustment
-            val newTemp = (_currentTemperature.value + rx.tempChange).coerceIn(-10.0, 1500.0)
+            // 2. Thermodynamic temperature adjustment (Exothermic heat spike or Endothermic chill)
+            val newTemp = (_currentTemperature.value + rx.tempChange).coerceIn(-196.0, 1500.0)
             _currentTemperature.value = newTemp
+            _targetTemperature.value = newTemp
 
             // 3. Container Contents: Retain unreacted excess + add synthesized products
             val updatedDispensed = mutableMapOf<String, com.example.data.model.DispensedChemical>()
@@ -461,6 +623,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 updatedActive[pId] = amount.toInt().coerceIn(10, 250)
             }
 
+            // If sealed with stopper, gaseous product moles increase internal pressure (PV = nRT)
+            val gasMolesEvolved = stoich.productYields.values.filter {
+                it.chemical.category == ChemicalCategory.GAS || it.chemical.physicalState.contains("Gas", true)
+            }.sumOf { it.molesProduced }
+            if (gasMolesEvolved > 0.0 && _isStopperSealed.value) {
+                _internalGasMoles.value += gasMolesEvolved
+            }
+
             _dispensedChemicals.value = updatedDispensed
             _activeChemicals.value = updatedActive
 
@@ -487,12 +657,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 ChemicalCatalog.getChemical(id)?.name
             }
 
-            // Notification alert with limiting reagent clarity
+            // Notification alert with thermodynamic details and limiting reagent clarity
             val limitingChem = ChemicalCatalog.getChemical(stoich.limitingReagentId)
+            val thermoTag = if (rx.isExothermic) "Exothermic (ΔH < 0, +${rx.tempChange.toInt()}°C)" else "Endothermic (ΔH > 0, -${kotlin.math.abs(rx.tempChange).toInt()}°C)"
             val alertObservation = if (stoich.isExactStoichiometricRatio) {
-                "${rx.observation} (Stoichiometrically Balanced: 100% of reactants consumed)."
+                "${rx.observation} [$thermoTag] (Stoichiometrically Balanced: 100% of reactants consumed)."
             } else {
-                "${rx.observation} [Limiting Reagent: ${limitingChem?.formula ?: stoich.limitingReagentId}]. ${stoich.unreactedExcessDescriptions.joinToString("; ")}"
+                "${rx.observation} [$thermoTag] [Limiting Reagent: ${limitingChem?.formula ?: stoich.limitingReagentId}]. ${stoich.unreactedExcessDescriptions.joinToString("; ")}"
             }
 
             _reactionAlert.value = ReactionAlert(
@@ -508,7 +679,139 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun stepSimulation(dt: Float = 0.016f) {
+        val currentT = _currentTemperature.value
+        val targetT = _targetTemperature.value
+        val app = _thermalApparatus.value
+
+        // 1. Dynamic Heat Transfer based on Thermal Apparatus
+        val heatRate = when (app) {
+            ThermalApparatus.BUNSEN_BURNER -> 0.12 // Fast aggressive roaring flame
+            ThermalApparatus.HOT_PLATE -> 0.05 // Controlled electric surface heating
+            ThermalApparatus.ICE_BATH -> 0.06 // Ice slurry cooling
+            ThermalApparatus.DRY_ICE_BATH -> 0.08 // Deep dry-ice bath
+            ThermalApparatus.LIQUID_NITROGEN_BATH -> 0.14 // Rapid cryogenic quenching
+            ThermalApparatus.NONE -> 0.008 // Passive ambient heat loss towards 25°C
+        }
+        val targetEnvelope = if (app == ThermalApparatus.NONE) 25.0 else targetT
+        val deltaT = (targetEnvelope - currentT) * heatRate * (dt * 15f)
+        val nextT = (currentT + deltaT).coerceIn(-196.0, 1500.0)
+        _currentTemperature.value = nextT
+
+        // 2. Dynamic Pressure Simulation (PV = nRT & Vapor Pressure)
+        if (!_isStopperSealed.value) {
+            _currentPressure.value = 1.0
+            _internalGasMoles.value = 0.0
+        } else {
+            val kelvin = max(1.0, nextT + 273.15)
+            val thermalP = kelvin / 298.15 // Thermal expansion of trapped air
+
+            val liquidsPresent = _activeChemicals.value.keys.any { id ->
+                val chem = ChemicalCatalog.getChemical(id)
+                chem != null && (chem.physicalState.contains("Liquid", true) || chem.physicalState.contains("Aqueous", true) || id == "H2O")
+            }
+            // Liquid boiling vapor pressure:
+            val boilingP = if (liquidsPresent && nextT >= 95.0) {
+                val excess = (nextT - 95.0) / 20.0
+                excess.pow(1.9) * 0.45
+            } else 0.0
+
+            val gasP = _internalGasMoles.value * 2.8 * (kelvin / 298.15)
+
+            val pumpMod = when {
+                _vacuumPumpActive.value -> -0.92 // Drawing near-vacuum (~0.08 atm)
+                _compressorActive.value -> 4.5 // Compressing gas
+                else -> 0.0
+            }
+
+            var calculatedP = (thermalP + boilingP + gasP + pumpMod).coerceIn(0.04, 100.0)
+
+            if (_isPressureReliefOpen.value) {
+                // Pressure relief valve rapidly vents pressure down towards atmospheric
+                calculatedP = max(1.0, calculatedP - (dt * 4.0))
+                _internalGasMoles.value = max(0.0, _internalGasMoles.value - (dt * 0.2))
+            }
+
+            _currentPressure.value = calculatedP
+        }
+
+        // 3. Container Safety & Hazard Mechanics
+        val tool = _activeTool.value
+        val safeT = tool.maxSafeTempC
+        val crackT = tool.thermalCrackTempC
+        val safeP = tool.maxSafePressureAtm
+        val burstP = tool.rupturePressureAtm
+
+        if (_containerHazardState.value != ContainerHazardState.RUPTURED_EXPLODED) {
+            when {
+                _currentPressure.value >= burstP -> {
+                    // Container Explosion / Rupture
+                    triggerContainerExplosion(
+                        "💥 CATASTROPHIC GLASS EXPLOSION! Internal pressure reached ${String.format("%.1f", _currentPressure.value)} atm, exceeding ${tool.title} burst limit (${String.format("%.1f", burstP)} atm). Glass shattered and contents spilled!"
+                    )
+                }
+                nextT >= crackT -> {
+                    if (_containerHazardState.value != ContainerHazardState.CRACKED) {
+                        _containerHazardState.value = ContainerHazardState.CRACKED
+                        _hazardMessage.value = "⚠️ THERMAL FRACTURE: ${tool.title} heated to ${nextT.roundToInt()}°C! Glass walls have cracked under thermal stress."
+                    }
+                }
+                _currentPressure.value > safeP -> {
+                    _containerHazardState.value = ContainerHazardState.PRESSURE_WARNING
+                    _hazardMessage.value = "⚡ HIGH PRESSURE WARNING: ${String.format("%.1f", _currentPressure.value)} atm exceeds safe limit (${String.format("%.1f", safeP)} atm). Open relief valve!"
+                }
+                nextT > safeT -> {
+                    _containerHazardState.value = ContainerHazardState.THERMAL_STRESS_WARNING
+                    _hazardMessage.value = "🔥 THERMAL STRESS: ${tool.title} heated to ${nextT.roundToInt()}°C (Safe limit: ${safeT.toInt()}°C)."
+                }
+                else -> {
+                    if (_containerHazardState.value != ContainerHazardState.CRACKED) {
+                        _containerHazardState.value = ContainerHazardState.INTACT
+                        _hazardMessage.value = null
+                    }
+                }
+            }
+        }
+
+        // 4. Record Live Thermodynamic Curves Telemetry Buffer
+        telemetryTickCounter++
+        if (telemetryTickCounter % 15 == 0) {
+            val list = _thermalHistory.value.toMutableList()
+            if (list.size >= 60) list.removeAt(0)
+            list.add(
+                ThermodynamicReading(
+                    timestampMs = System.currentTimeMillis(),
+                    temperatureCelsius = nextT,
+                    pressureAtm = _currentPressure.value,
+                    hazardState = _containerHazardState.value
+                )
+            )
+            _thermalHistory.value = list
+        }
+
+        // 5. Advance 2D Physics Step
+        chemistryEngine.updateEnvironment(
+            tool = _activeTool.value,
+            temperature = nextT,
+            heating = _isHeating.value,
+            electricity = _isElectricityActive.value,
+            centrifuging = _isCentrifuging.value,
+            stopperSealed = _isStopperSealed.value
+        )
         chemistryEngine.step(dt)
+    }
+
+    fun triggerContainerExplosion(reason: String) {
+        _containerHazardState.value = ContainerHazardState.RUPTURED_EXPLODED
+        _hazardMessage.value = reason
+        _isStopperSealed.value = false
+        _currentPressure.value = 1.0
+        _internalGasMoles.value = 0.0
+        _activeChemicals.value = emptyMap()
+        _dispensedChemicals.value = emptyMap()
+        _latestStoichiometryResult.value = null
+        _hasPrecipitate.value = false
+        _hasUnreactedSolid.value = false
+        chemistryEngine.clear()
     }
 
     private fun recalculateLiquidProperties(skipColorOverride: Boolean = false) {
@@ -517,7 +820,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             temperature = _currentTemperature.value,
             heating = _isHeating.value,
             electricity = _isElectricityActive.value,
-            centrifuging = _isCentrifuging.value
+            centrifuging = _isCentrifuging.value,
+            stopperSealed = _isStopperSealed.value
         )
         chemistryEngine.syncFromChemicalMap(_activeChemicals.value)
 
