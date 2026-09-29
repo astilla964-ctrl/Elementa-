@@ -565,8 +565,8 @@ object ChemicalCatalog {
         )
     )
 
-    // ALL 118 ELEMENTS + BASE COMPOUNDS
-    val ALL_CHEMICALS: List<Chemical> = PeriodicTableData.ALL_118_ELEMENTS + BASE_COMPOUNDS
+    // ALL 118 ELEMENTS + BASE COMPOUNDS + EXTENDED REACTION COMPOUNDS
+    val ALL_CHEMICALS: List<Chemical> = PeriodicTableData.ALL_118_ELEMENTS + BASE_COMPOUNDS + ExtendedChemicals.ALL_EXTENDED_COMPOUNDS
 
     val REACTIONS: List<Reaction> = listOf(
         // 1. Water Boiling to Steam
@@ -999,16 +999,28 @@ object ChemicalCatalog {
             resultingColor = 0xEEF8FAFC,
             observation = "Thermal decomposition in crucible releases brisk vigorous streams of pure oxygen gas, leaving neutral KCl."
         )
-    )
+    ) + AllReactionsCatalog.ALL_105_REACTIONS
 
-    fun getChemical(id: String): Chemical? = ALL_CHEMICALS.find { it.id.equals(id, ignoreCase = true) || it.symbol.equals(id, ignoreCase = true) }
-
-    private fun normalizeReactant(id: String): String = when (id) {
+    fun normalizeReactant(id: String): String = when (id) {
         "H2" -> "H"
         "O2" -> "O"
         "N2" -> "N"
         "Cl2" -> "Cl"
+        "Br2" -> "Br"
+        "I2" -> "I"
+        "P4" -> "P"
         else -> id
+    }
+
+    fun getChemical(id: String): Chemical? {
+        val norm = normalizeReactant(id)
+        return ALL_CHEMICALS.find {
+            it.id.equals(id, ignoreCase = true) ||
+            it.id.equals(norm, ignoreCase = true) ||
+            (it.symbol != null && (it.symbol.equals(id, ignoreCase = true) || it.symbol.equals(norm, ignoreCase = true))) ||
+            it.formula.equals(id, ignoreCase = true) ||
+            it.formula.equals(norm, ignoreCase = true)
+        }
     }
 
     fun findMatchingReaction(
@@ -1022,8 +1034,8 @@ object ChemicalCatalog {
 
         return REACTIONS.find { rx ->
             val rxReactants = rx.reactantIds.map { normalizeReactant(it) }.toSet()
-            val hasAllReactants = rxReactants.all { it in normalizedReactants }
-            val tempSatisfied = currentTemp >= rx.minTemp && currentTemp <= rx.maxTemp
+            val hasAllReactants = rxReactants.all { it in normalizedReactants || it in reactantIds }
+            val tempSatisfied = currentTemp >= (rx.minTemp - 15.0) && currentTemp <= rx.maxTemp
             val electricitySatisfied = !rx.requiresElectricity || isElectricityActive
             val centrifugeSatisfied = !rx.requiresCentrifuge || isCentrifugeActive
             val toolSatisfied = rx.requiredTool == null || rx.requiredTool == activeTool

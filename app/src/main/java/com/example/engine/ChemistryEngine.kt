@@ -246,14 +246,27 @@ class ChemistryEngine(
 
         ChemicalCatalog.REACTIONS.forEach { reaction ->
             val hasReactants = reaction.reactantIds.all { rId ->
-                rId in presentChemicalIds || (rId == "H" && "H2" in presentChemicalIds) || (rId == "O" && "O2" in presentChemicalIds)
+                val norm = ChemicalCatalog.normalizeReactant(rId)
+                rId in presentChemicalIds || norm in presentChemicalIds ||
+                particles.any {
+                    it.chemical.id.equals(rId, true) ||
+                    it.chemical.id.equals(norm, true) ||
+                    (it.chemical.symbol != null && (it.chemical.symbol.equals(rId, true) || it.chemical.symbol.equals(norm, true))) ||
+                    it.chemical.formula.equals(rId, true)
+                }
             }
 
             if (hasReactants) {
                 // Find participating particles in closest proximity
                 val participants = mutableListOf<ElementParticle2D>()
                 reaction.reactantIds.forEach { rId ->
-                    val found = particles.find { it.chemical.id.equals(rId, ignoreCase = true) || it.chemical.symbol.equals(rId, ignoreCase = true) }
+                    val norm = ChemicalCatalog.normalizeReactant(rId)
+                    val found = particles.find {
+                        it.chemical.id.equals(rId, ignoreCase = true) ||
+                        it.chemical.id.equals(norm, ignoreCase = true) ||
+                        (it.chemical.symbol != null && (it.chemical.symbol.equals(rId, ignoreCase = true) || it.chemical.symbol.equals(norm, ignoreCase = true))) ||
+                        it.chemical.formula.equals(rId, ignoreCase = true)
+                    }
                     if (found != null) participants.add(found)
                 }
 
@@ -308,7 +321,13 @@ class ChemistryEngine(
 
         // 1. Remove reactant particles
         rx.reactantIds.forEach { rId ->
-            val idx = particles.indexOfFirst { it.chemical.id.equals(rId, ignoreCase = true) || it.chemical.symbol.equals(rId, ignoreCase = true) }
+            val norm = ChemicalCatalog.normalizeReactant(rId)
+            val idx = particles.indexOfFirst {
+                it.chemical.id.equals(rId, ignoreCase = true) ||
+                it.chemical.id.equals(norm, ignoreCase = true) ||
+                (it.chemical.symbol != null && (it.chemical.symbol.equals(rId, ignoreCase = true) || it.chemical.symbol.equals(norm, ignoreCase = true))) ||
+                it.chemical.formula.equals(rId, ignoreCase = true)
+            }
             if (idx >= 0) {
                 particles.removeAt(idx)
             }
