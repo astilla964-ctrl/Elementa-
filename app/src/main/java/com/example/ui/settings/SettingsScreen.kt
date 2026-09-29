@@ -623,9 +623,10 @@ fun SettingsScreen(
 # Elementa — Automatic Changelog
 
 ### [v1.3.0] — 2026-09-29
-- 100 New Chemical Reactions Generated: Expanded simulation engine to 205+ total reactions (rxn_106 through rxn_205), including Prussian Blue, Elephant's Toothpaste, Thermite, Chemical Gardens, and more.
+- 100 New Chemical Reactions Generated: Expanded simulation engine to 238 total reactions (rxn_106 through rxn_205), including Prussian Blue, Elephant's Toothpaste, Thermite, Chemical Gardens, and more.
 - 95+ New Chemical Compounds: Added MoreExtendedChemicals.kt providing full physical, thermodynamic, and hazard specs for all newly synthesizable species.
 - Complete Reaction Guide: Reaction Notebook now catalogs over 238 total reactions ready to simulate with 1-click vessel loading.
+- Broad Chemistry Domain Coverage: Organic syntheses (aspirin, esters), coordination complexes, pyrotechnics, metal activity displacement trees, and electrolysis.
 
 ### [v1.2.0] — 2026-09-29
 - Full 105 Reactions Engine Integration: All 105 reactions from chemistry_reactions_105.json and seed reactions are compiled into AllReactionsCatalog.kt and wired into ChemistryEngine.kt.

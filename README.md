@@ -19,8 +19,8 @@
 
 ## ✨ Features
 
-- **🔬 118 Periodic Elements & 70+ Extended Compounds**: Complete physical profiles including molar mass, STP state, density, pH, GHS/NFPA hazard classifications, and boiling/melting points.
-- **⚡ 105 Fully-Simulated Reactions**: Acid-base neutralizations, combustion reactions, single & double displacements, thermal calcination, and electrochemical electrolysis.
+- **🔬 118 Periodic Elements & 165+ Extended Compounds**: Complete physical profiles including molar mass, STP state, density, pH, GHS/NFPA hazard classifications, and boiling/melting points.
+- **⚡ 238 Fully-Simulated Reactions**: Acid-base neutralizations, coordination complexes, combustion reactions, single & double displacements, organic syntheses, pyrotechnics, and electrochemical electrolysis.
 - **🎨 2D Physics Particle Engine**: Real-time particle canvas rendering Brownian agitation, buoyancy, phase transitions, and visual particle archetypes (`bubble`, `vapor`, `crystal`, `fluid`).
 - **🧰 Realistic Lab Apparatus**:
   - **Bunsen Burner**: Thermal heating up to 1500°C with flame color responses.
@@ -37,6 +37,24 @@
 ## 📜 Automatic Changelog
 
 > *This section is automatically updated by GitHub Actions upon each new release tag.*
+
+### [v1.3.0] — 2026-09-29
+#### 🚀 Added
+- **100 New Chemical Reactions (`rxn_106` through `rxn_205`)**: Expanded the simulation engine to 238 total verified reactions ready to simulate.
+  - *Coordination Chemistry*: Prussian Blue (`Fe₄[Fe(CN)₆]₃`), blood-red iron thiocyanate complex, deep royal-blue tetraamminecopper(II), and strawberry-pink nickel dimethylglyoxime (`Ni(DMG)₂`).
+  - *Pyrotechnics & High-Energy Reactions*: Ammonium dichromate tabletop volcano, carbon sugar snake column, thermite welding reactions (iron, chromium, manganese), black powder, and chlorate-sugar deflagration.
+  - *Chemical Gardens*: Osmotic growth of copper, cobalt, iron, and nickel silicate spires in water glass (`Na₂SiO₃`).
+  - *Organic Synthesis & Diagnostics*: Fischer esterification of ethyl acetate and wintergreen oil, aspirin synthesis, yellow iodoform haloform test, Tollens' silver mirror test, and Fehling's reducing sugar test.
+  - *Metal Activity Series & Single Displacement*: Silver crystal tree, lead tree, and aluminum/zinc replacement reactions.
+  - *Extreme Thermodynamics & Electrochemistry*: Sub-zero endothermic freezing to -20°C, elephant's toothpaste foam eruption, chlor-alkali brine electrolysis, and copper electroplating.
+- **95+ New Chemical Compounds (`MoreExtendedChemicals.kt`)**: Added full physical, thermodynamic, and hazard specifications for all newly synthesizable species.
+- **1-Click Vessel Loading**: Extended Reaction Notebook & Guide to automatically configure reactants, glassware, temperature, and electrical power with one tap.
+
+#### 🛠️ Fixed & Improved
+- Verified complete catalog stoichiometry and resolution of all reactant and product species in automated unit test suites.
+- Ensured smooth 2D physics simulation of newly introduced precipitates, gaseous effervescence, and solution color transitions.
+
+---
 
 ### [v1.2.0] — 2026-09-29
 #### 🚀 Added
