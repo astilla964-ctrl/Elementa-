@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.ScreenRotation
@@ -82,6 +83,7 @@ fun SettingsScreen(
 
     var showResetDialog by remember { mutableStateOf(false) }
     var showLogsDialog by remember { mutableStateOf(false) }
+    var showReadmeChangelogDialog by remember { mutableStateOf(false) }
 
     fun copyToClipboard(label: String, text: String) {
         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -431,6 +433,22 @@ fun SettingsScreen(
                         Text("Check for Online Updates")
                     }
                 }
+
+                Button(
+                    onClick = { showReadmeChangelogDialog = true },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("view_readme_changelog_button"),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(imageVector = Icons.Default.Info, contentDescription = "Readme", modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Read Me & Automatic Changelog", fontWeight = FontWeight.Bold)
+                }
             }
         }
 
@@ -597,5 +615,186 @@ fun SettingsScreen(
                 }
             }
         )
+    }
+
+    // Read Me & Automatic Changelog Dialog
+    if (showReadmeChangelogDialog) {
+        val fullChangelogText = """
+# Elementa — Automatic Changelog
+
+### [v1.2.0] — 2026-09-29
+- Full 105 Reactions Engine Integration: All 105 reactions from chemistry_reactions_105.json and seed reactions are compiled into AllReactionsCatalog.kt and wired into ChemistryEngine.kt.
+- Extended Compounds Registry: Created ExtendedChemicals.kt covering 70 previously missing compound species (AgNO₃, CuSO₄, Pb(NO₃)₂, KMnO₄, AlCl₃, BaSO₄, CH₃COOH, C₃H₈, etc.).
+- Simulation Readiness Evaluation: Introduced Compound data schema with isSimulatable validation checking physical parameter completeness.
+- Automatic Changelog Workflow: Automated README changelog generator via GitHub Actions.
+
+### [v1.1.0] — 2026-09-29
+- 100 Dynamic Chemistry Reactions: Integrated chemistry_reactions_100.json with temperature triggers, catalysts, flame colors, and gas emission tracking.
+- Interactive Reaction Suggestions: Workbench automatically prompts users when reactants in the beaker are close to reaction thresholds.
+- Compound Dossier Dialog: Added detailed inspection modal for chemical formulas, atomic numbers, element families, and GHS handling symbols.
+
+### [v1.0.0] — 2026-09-28
+- Periodic Table of Elements: Full dataset of 118 elements categorized by family.
+- 2D Particle Simulation Workbench: Interactive canvas supporting drag-and-pour chemistry.
+- Support Developer Affordance: Integrated GCash and Maya tipping numbers for Astilla Softwares.
+- Local Persistence: SQLite/Room database saving discovered compounds and reaction history logs.
+        """.trimIndent()
+
+        AlertDialog(
+            onDismissRequest = { showReadmeChangelogDialog = false },
+            title = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "📖 Read Me & Changelog",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Astilla Softwares • Front of GitHub",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(380.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    // Badge info box
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Current Release:", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                                Text("v1.2.0 (Latest)", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            }
+                            Text(
+                                text = "Automated GitHub workflow syncs this changelog directly to the repository front README.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    // Changelog entries
+                    Text(
+                        text = "📜 Release History",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    // v1.2.0
+                    ChangelogCard(
+                        version = "v1.2.0 (Current)",
+                        date = "2026-09-29",
+                        highlights = listOf(
+                            "Full 105 Reactions Engine: All reactions compiled into AllReactionsCatalog.kt and actively simulated.",
+                            "70 Extended Compounds: Added AgNO₃, CuSO₄, KMnO₄, Pb(NO₃)₂, etc., with physical and hazard profiles.",
+                            "Simulation Readiness: Compound schema with isSimulatable parameter validation.",
+                            "Automated GitHub Actions workflow for README changelog updating."
+                        ),
+                        isLatest = true
+                    )
+
+                    // v1.1.0
+                    ChangelogCard(
+                        version = "v1.1.0",
+                        date = "2026-09-29",
+                        highlights = listOf(
+                            "100 Dynamic reactions JSON dataset integration.",
+                            "Proximity reaction suggestion engine and activation prompt banners.",
+                            "Chemical Dossier dialog with GHS safety symbols and atomic metadata."
+                        ),
+                        isLatest = false
+                    )
+
+                    // v1.0.0
+                    ChangelogCard(
+                        version = "v1.0.0",
+                        date = "2026-09-28",
+                        highlights = listOf(
+                            "Initial release with all 118 periodic table elements.",
+                            "2D particle simulation engine with phase transitions.",
+                            "Astilla Softwares developer tipping support (GCash/Maya).",
+                            "Room database offline Pokedex discovery tracking."
+                        ),
+                        isLatest = false
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        copyToClipboard("Changelog", fullChangelogText)
+                    },
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Icon(imageVector = Icons.Default.ContentCopy, contentDescription = "Copy", modifier = Modifier.size(14.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Copy Changelog")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showReadmeChangelogDialog = false }) {
+                    Text("Close")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun ChangelogCard(
+    version: String,
+    date: String,
+    highlights: List<String>,
+    isLatest: Boolean
+) {
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = if (isLatest) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        border = if (isLatest) androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)) else null,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = version, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                Text(text = date, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            highlights.forEach { item ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Text("•", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = item,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
     }
 }

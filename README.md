@@ -1,0 +1,105 @@
+# 🧪 Elementa — 2D Interactive Chemistry Simulation & Laboratory Tool
+
+[![GitHub Release](https://img.shields.io/github/v/release/astillasoftwares/elementa?color=blue&label=Latest%20Release)](https://github.com/astillasoftwares/elementa/releases)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-purple.svg)](https://kotlinlang.org)
+[![Android](https://img.shields.io/badge/Platform-Android%2014%2B-green.svg)](https://developer.android.com)
+[![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack%20Compose%20M3-4285F4.svg)](https://developer.android.com/jetpack/compose)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+> **Developed by Astilla Softwares**  
+> *A high-performance 2D laboratory chemistry simulation, particle physics sandbox, and apparatus management tool.*
+
+---
+
+## 📖 Overview
+
+**Elementa** brings interactive experimental chemistry to Android. Featuring a custom 2D particle simulation engine, all 118 periodic table elements, over 100 comprehensive chemical reactions, and standard laboratory apparatus, Elementa allows researchers, students, and hobbyists to safely mix reagents, trigger reactions, measure thermodynamic properties, and document syntheses in a local Room database Pokedex.
+
+---
+
+## ✨ Features
+
+- **🔬 118 Periodic Elements & 70+ Extended Compounds**: Complete physical profiles including molar mass, STP state, density, pH, GHS/NFPA hazard classifications, and boiling/melting points.
+- **⚡ 105 Fully-Simulated Reactions**: Acid-base neutralizations, combustion reactions, single & double displacements, thermal calcination, and electrochemical electrolysis.
+- **🎨 2D Physics Particle Engine**: Real-time particle canvas rendering Brownian agitation, buoyancy, phase transitions, and visual particle archetypes (`bubble`, `vapor`, `crystal`, `fluid`).
+- **🧰 Realistic Lab Apparatus**:
+  - **Bunsen Burner**: Thermal heating up to 1500°C with flame color responses.
+  - **Titration Buret**: Precise stoichiometric drop-by-drop titration.
+  - **DC Electrodes**: Water and acid electrolysis with gas evolution.
+  - **Centrifuge**: Accelerated precipitate sedimentation and separation.
+  - **Beakers, Crucibles, Test Tubes & Condensers**.
+- **📚 Lab Pokedex & Synthesis Dossier**: Automatically tracks discovery dates and production counts in an offline Room database.
+- **🌓 Dynamic UI & Themes**: Material Design 3 with Dark, Light, Cyberpunk Neon, and Solar Flare color schemes, plus portrait/landscape orientation lock.
+
+---
+
+<!-- CHANGELOG_START -->
+## 📜 Automatic Changelog
+
+> *This section is automatically updated by GitHub Actions upon each new release tag.*
+
+### [v1.2.0] — 2026-09-29
+#### 🚀 Added
+- **Full 105 Reactions Engine Integration**: All 105 reactions from `chemistry_reactions_105.json` and seed reactions are compiled into `AllReactionsCatalog.kt` and wired into `ChemistryEngine.kt`.
+- **Extended Compounds Registry**: Created `ExtendedChemicals.kt` covering 70 previously missing compound species (`AgNO₃`, `CuSO₄`, `Pb(NO₃)₂`, `KMnO₄`, `AlCl₃`, `BaSO₄`, `CH₃COOH`, `C₃H₈`, etc.) with physical properties and safety classifications.
+- **Simulation Readiness Evaluation**: Introduced `Compound` data schema with `isSimulatable` validation checking physical parameter completeness.
+- **Automatic Changelog Viewer**: Embedded in-app Changelog & README reader under Settings.
+
+#### 🛠️ Fixed & Improved
+- **Allotrope & Diatomic Normalization**: Reagent matching now handles `H₂` $\leftrightarrow$ `H`, `O₂` $\leftrightarrow$ `O`, `N₂` $\leftrightarrow$ `N`, `Cl₂` $\leftrightarrow$ `Cl`, `Br₂` $\leftrightarrow$ `Br`, `I₂` $\leftrightarrow$ `I`, and `P₄` $\leftrightarrow$ `P`.
+- **Tool Mapping**: Connected 95 distinct lab tool names to active workbench apparatus.
+
+---
+
+### [v1.1.0] — 2026-09-29
+#### 🚀 Added
+- **100 Dynamic Chemistry Reactions**: Integrated `chemistry_reactions_100.json` with temperature triggers, catalysts, flame colors, and gas emission tracking.
+- **Interactive Reaction Suggestions**: Workbench automatically prompts users when reactants in the beaker are close to reaction thresholds.
+- **Compound Dossier Dialog**: Added detailed inspection modal for chemical formulas, atomic numbers, element families, and GHS handling symbols.
+
+#### 🛠️ Fixed & Improved
+- Optimized Room database queries with indexed queries for reaction logs and discovered compounds.
+- Added dark and light theme contrast enhancements for chemical liquid representations.
+
+---
+
+### [v1.0.0] — 2026-09-28
+#### 🚀 Initial Release
+- **Periodic Table of Elements**: Full dataset of 118 elements categorized by family (Alkali, Halogen, Noble Gas, Transition Metals, etc.).
+- **2D Particle Simulation Workbench**: Interactive canvas supporting drag-and-pour chemistry.
+- **Support Developer Affordance**: Integrated GCash and Maya tipping numbers for Astilla Softwares.
+- **Local Persistence**: SQLite/Room database saving discovered compounds and reaction history logs.
+<!-- CHANGELOG_END -->
+
+---
+
+## 🔄 GitHub Automated Changelog Workflow
+
+To keep this `README.md` automatically in sync with GitHub releases, the repository includes a GitHub Actions workflow (`.github/workflows/update-changelog.yml`):
+
+1. **Trigger**: Runs automatically whenever a new GitHub Release is published or a version tag (`v*.*.*`) is pushed.
+2. **Release Notes Extraction**: Automatically retrieves the latest release body and tag via the GitHub REST API.
+3. **In-Place Update**: Updates the content between `<!-- CHANGELOG_START -->` and `<!-- CHANGELOG_END -->` in `README.md`.
+4. **Git Commit & Push**: Commits the updated README back to `main` with a bot commit.
+
+---
+
+## 🛠️ Tech Stack & Architecture
+
+- **Language**: Kotlin 100%
+- **Architecture**: Clean Architecture / MVVM (`MainViewModel`, `LabRepository`, `AppDatabase`)
+- **UI Toolkit**: Jetpack Compose with Material Design 3 (M3)
+- **Local Database**: Android Jetpack Room (SQLite)
+- **Networking**: OkHttp3 & Moshi for GitHub Release API checks
+- **Physics**: Custom Coroutine-driven 2D Euler particle engine
+
+---
+
+## 🤝 Support & Contributions
+
+Developed with ❤️ by **Astilla Softwares**.
+
+- **GCash**: `09273352516` (Lewis)
+- **Maya**: `09273352516` (Maya)
+
+If you enjoy Elementa, consider starring the repository and submitting issues or feature requests on GitHub!

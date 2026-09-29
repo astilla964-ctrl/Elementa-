@@ -1,0 +1,93 @@
+name: Update README Changelog
+
+on:
+  release:
+    types: [published, edited]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate and Update Changelog in README
+        id: update_changelog
+        run: |
+          python3 - << 'EOF'
+          import json, os, re, urllib.request
+
+          repo = os.environ.get('GITHUB_REPOSITORY', 'astillasoftwares/elementa')
+          token = os.environ.get('GITHUB_TOKEN', '')
+          
+          url = f"https://api.github.com/repos/{repo}/releases"
+          req = urllib.request.Request(url)
+          if token:
+              req.add_header('Authorization', f'Bearer {token}')
+          req.add_header('User-Agent', 'Changelog-Action')
+
+          try:
+              with urllib.request.urlopen(req) as resp:
+                  releases = json.loads(resp.read().decode('utf-8'))
+          except Exception as e:
+              print(f"Could not fetch releases: {e}")
+              releases = []
+
+          if not releases:
+              print("No releases found, skipping update.")
+              exit(0)
+
+          changelog_entries = []
+          for r in releases[:10]:
+              tag = r.get('tag_name', 'v1.0.0')
+              date = r.get('published_at', '')[:10]
+              body = r.get('body', '').strip()
+              name = r.get('name', tag)
+              
+              entry = f"### [{tag}] — {date}\n"
+              if body:
+                  entry += f"{body}\n\n---\n"
+              else:
+                  entry += f"#### 🚀 Release {name}\n\n---\n"
+              changelog_entries.append(entry)
+
+          new_changelog = "\n".join(changelog_entries)
+
+          readme_path = 'README.md'
+          if not os.path.exists(readme_path):
+              print("README.md not found!")
+              exit(1)
+
+          with open(readme_path, 'r', encoding='utf-8') as f:
+              content = f.read()
+
+          pattern = r'(<!-- CHANGELOG_START -->\s*## 📜 Automatic Changelog\s*)(.*?)(<!-- CHANGELOG_END -->)'
+          replacement = r'\1\n\n> *This section is automatically updated by GitHub Actions upon each new release tag.*\n\n' + new_changelog + r'\n\3'
+          
+          updated_content = re.sub(pattern, replacement, content, flags=re.DOTALL)
+
+          with open(readme_path, 'w', encoding='utf-8') as f:
+              f.write(updated_content)
+
+          print("Successfully updated README.md with latest releases.")
+          EOF
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "docs(readme): automatically update changelog from GitHub Releases [skip ci]"
+            git push
+          fi
