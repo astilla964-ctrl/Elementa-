@@ -4,6 +4,9 @@ import com.example.data.model.ChemicalCatalog
 import com.example.data.model.LabToolType
 import com.example.engine.ChemistryEngine
 import com.example.engine.model.ParticlePhase
+import com.example.data.model.DispensedChemical
+import com.example.data.model.DispenserApparatusType
+import com.example.engine.stoichiometry.StoichiometryEngine
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -166,6 +169,95 @@ class ChemistryEngineTest {
 
         val state = engine.engineState.value
         assertTrue(state.particles.any { it.chemical.id == "Fe4[Fe(CN)6]3" })
+    }
+
+    @Test
+    fun `quantitative measurement apparatus mole conversions`() {
+        val zinc = ChemicalCatalog.getChemical("Zn")!!
+        val hcl = ChemicalCatalog.getChemical("HCl")!!
+        val oxygen = ChemicalCatalog.getChemical("O2")!!
+
+        // 1. Analytical Balance: Mass (g) / Molar Mass (g/mol)
+        val zincMoles = StoichiometryEngine.calculateMoles(
+            chemical = zinc,
+            apparatusType = DispenserApparatusType.ANALYTICAL_BALANCE,
+            amountValue = 65.38 // 1 mol of Zn
+        )
+        assertEquals(1.0, zincMoles, 0.01)
+
+        // 2. Graduated Cylinder / Buret: Molarity (M) * Volume (L)
+        val hclMoles = StoichiometryEngine.calculateMoles(
+            chemical = hcl,
+            apparatusType = DispenserApparatusType.GRADUATED_CYLINDER,
+            amountValue = 100.0, // 100 mL
+            molarity = 2.0 // 2.0 M
+        )
+        assertEquals(0.2, hclMoles, 0.001)
+
+        // 3. Gas Syringe: Volume at STP (L) / 22.414 (L/mol)
+        val o2Moles = StoichiometryEngine.calculateMoles(
+            chemical = oxygen,
+            apparatusType = DispenserApparatusType.GAS_SYRINGE,
+            amountValue = 22.414 // 1 mol at STP
+        )
+        assertEquals(1.0, o2Moles, 0.005)
+    }
+
+    @Test
+    fun `stoichiometric engine identifies limiting and excess reagents and calculates exact yields`() {
+        // Find reaction: Zn + 2HCl -> ZnCl2 + H2 (or rxn_034 / single replacement)
+        val rx = ChemicalCatalog.REACTIONS.find { it.reactantIds.contains("Zn") && it.reactantIds.contains("HCl") }
+        assertNotNull("Expected Zn + HCl reaction in catalog", rx)
+
+        val zinc = ChemicalCatalog.getChemical("Zn")!!
+        val hcl = ChemicalCatalog.getChemical("HCl")!!
+
+        // Provide 10g of Zn (~0.153 mol) and 50 mL of 1.0M HCl (0.05 mol)
+        // Balanced: Zn + 2HCl -> ZnCl2 + H2
+        // HCl requires 0.05 / 2 = 0.025 mol of Zn. Zn has 0.153 mol.
+        // Therefore, HCl is the LIMITING REAGENT!
+        val initialDispensed = mapOf(
+            "Zn" to DispensedChemical(
+                chemical = zinc,
+                apparatusType = DispenserApparatusType.ANALYTICAL_BALANCE,
+                amountValue = 10.0,
+                moles = 10.0 / zinc.molarMass
+            ),
+            "HCl" to DispensedChemical(
+                chemical = hcl,
+                apparatusType = DispenserApparatusType.GRADUATED_CYLINDER,
+                amountValue = 50.0,
+                molarity = 1.0,
+                moles = 1.0 * (50.0 / 1000.0)
+            )
+        )
+
+        val result = StoichiometryEngine.calculateStoichiometry(rx!!, initialDispensed)
+
+        // Limiting reagent must be HCl
+        assertEquals("HCl", result.limitingReagentId)
+        assertFalse(result.isExactStoichiometricRatio)
+
+        // Unreacted Zn must remain (~0.128 mol leftover)
+        val remainingZn = result.remainingQuantities["Zn"]
+        assertNotNull(remainingZn)
+        assertTrue(remainingZn!!.moles > 0.10)
+        assertTrue(remainingZn.amountValue > 6.0) // grams of unreacted Zn
+
+        // HCl consumed completely
+        val remainingHcl = result.remainingQuantities["HCl"]
+        assertNotNull(remainingHcl)
+        assertEquals(0.0, remainingHcl!!.moles, 0.001)
+
+        // Products formed yields calculated
+        assertTrue(result.productYields.isNotEmpty())
+        assertTrue(result.unreactedExcessDescriptions.isNotEmpty())
+
+        // Blended solution properties
+        val blended = StoichiometryEngine.calculateBlendedSolution(rx, result)
+        // Excess solid Zn remaining
+        assertTrue(blended.hasUnreactedSolid)
+        assertTrue(blended.hasSettledPrecipitate)
     }
 }
 

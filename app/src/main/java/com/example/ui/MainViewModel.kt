@@ -109,28 +109,85 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _selectedToolDetail.value = tool
     }
 
-    fun addChemical(chemicalId: String, amount: Int = 25) {
-        val current = _activeChemicals.value.toMutableMap()
-        current[chemicalId] = (current[chemicalId] ?: 0) + amount
-        _activeChemicals.value = current
+    // Quantitative Dispensed Reagents & Stoichiometry State
+    private val _dispensedChemicals = MutableStateFlow<Map<String, com.example.data.model.DispensedChemical>>(emptyMap())
+    val dispensedChemicals: StateFlow<Map<String, com.example.data.model.DispensedChemical>> = _dispensedChemicals.asStateFlow()
+
+    private val _latestStoichiometryResult = MutableStateFlow<com.example.data.model.StoichiometryResult?>(null)
+    val latestStoichiometryResult: StateFlow<com.example.data.model.StoichiometryResult?> = _latestStoichiometryResult.asStateFlow()
+
+    fun dismissStoichiometryResult() {
+        _latestStoichiometryResult.value = null
+    }
+
+    fun dispenseChemical(dispensed: com.example.data.model.DispensedChemical) {
+        val currentDispensed = _dispensedChemicals.value.toMutableMap()
+        currentDispensed[dispensed.chemical.id] = dispensed
+        _dispensedChemicals.value = currentDispensed
+
+        val currentActive = _activeChemicals.value.toMutableMap()
+        currentActive[dispensed.chemical.id] = dispensed.amountValue.toInt().coerceIn(5, 250)
+        _activeChemicals.value = currentActive
+
+        _latestStoichiometryResult.value = null
         recalculateLiquidProperties()
+    }
+
+    fun addChemical(chemicalId: String, amount: Int = 25) {
+        val chem = ChemicalCatalog.getChemical(chemicalId)
+        if (chem != null) {
+            val appType = when {
+                chem.category == com.example.data.model.ChemicalCategory.GAS -> com.example.data.model.DispenserApparatusType.GAS_SYRINGE
+                chem.physicalState.contains("Liquid") || chem.physicalState.contains("Aqueous") || chem.category == com.example.data.model.ChemicalCategory.ACID || chem.category == com.example.data.model.ChemicalCategory.BASE -> com.example.data.model.DispenserApparatusType.GRADUATED_CYLINDER
+                else -> com.example.data.model.DispenserApparatusType.ANALYTICAL_BALANCE
+            }
+            val moles = com.example.engine.stoichiometry.StoichiometryEngine.calculateMoles(
+                chemical = chem,
+                apparatusType = appType,
+                amountValue = amount.toDouble(),
+                molarity = if (appType == com.example.data.model.DispenserApparatusType.GRADUATED_CYLINDER) 1.0 else null
+            )
+            val dispensed = com.example.data.model.DispensedChemical(
+                chemical = chem,
+                apparatusType = appType,
+                amountValue = amount.toDouble(),
+                molarity = if (appType == com.example.data.model.DispenserApparatusType.GRADUATED_CYLINDER) 1.0 else null,
+                moles = moles
+            )
+            dispenseChemical(dispensed)
+        } else {
+            val current = _activeChemicals.value.toMutableMap()
+            current[chemicalId] = (current[chemicalId] ?: 0) + amount
+            _activeChemicals.value = current
+            recalculateLiquidProperties()
+        }
     }
 
     fun removeChemical(chemicalId: String) {
         val current = _activeChemicals.value.toMutableMap()
         current.remove(chemicalId)
         _activeChemicals.value = current
+
+        val currentDispensed = _dispensedChemicals.value.toMutableMap()
+        currentDispensed.remove(chemicalId)
+        _dispensedChemicals.value = currentDispensed
+
         recalculateLiquidProperties()
     }
 
     fun clearWorkbench() {
         _activeChemicals.value = emptyMap()
+        _dispensedChemicals.value = emptyMap()
+        _latestStoichiometryResult.value = null
         _currentTemperature.value = 25.0
         _currentPh.value = 7.0
         _isHeating.value = false
         _isElectricityActive.value = false
         _isCentrifuging.value = false
         _hasPrecipitate.value = false
+        _hasUnreactedSolid.value = false
+        _unreactedSolidName.value = null
+        _liquidAlpha.value = 0.78f
         _reactionAlert.value = null
         _liquidColorHex.value = 0xAA38BDF8
         chemistryEngine.clear()
@@ -140,6 +197,39 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun loadReactionReactants(reaction: Reaction) {
         val map = reaction.reactantIds.associateWith { 50 }
         _activeChemicals.value = map
+
+        val dispensedMap = mutableMapOf<String, com.example.data.model.DispensedChemical>()
+        reaction.reactantIds.forEach { rId ->
+            val chem = ChemicalCatalog.getChemical(rId)
+            if (chem != null) {
+                val app = when {
+                    chem.category == com.example.data.model.ChemicalCategory.GAS -> com.example.data.model.DispenserApparatusType.GAS_SYRINGE
+                    chem.physicalState.contains("Liquid") || chem.physicalState.contains("Aqueous") || chem.category == com.example.data.model.ChemicalCategory.ACID || chem.category == com.example.data.model.ChemicalCategory.BASE -> com.example.data.model.DispenserApparatusType.GRADUATED_CYLINDER
+                    else -> com.example.data.model.DispenserApparatusType.ANALYTICAL_BALANCE
+                }
+                val amount = when (app) {
+                    com.example.data.model.DispenserApparatusType.ANALYTICAL_BALANCE -> 10.0
+                    com.example.data.model.DispenserApparatusType.GRADUATED_CYLINDER -> 50.0
+                    com.example.data.model.DispenserApparatusType.GAS_SYRINGE -> 2.0
+                }
+                val moles = com.example.engine.stoichiometry.StoichiometryEngine.calculateMoles(
+                    chemical = chem,
+                    apparatusType = app,
+                    amountValue = amount,
+                    molarity = if (app == com.example.data.model.DispenserApparatusType.GRADUATED_CYLINDER) 1.0 else null
+                )
+                dispensedMap[rId] = com.example.data.model.DispensedChemical(
+                    chemical = chem,
+                    apparatusType = app,
+                    amountValue = amount,
+                    molarity = if (app == com.example.data.model.DispenserApparatusType.GRADUATED_CYLINDER) 1.0 else null,
+                    moles = moles
+                )
+            }
+        }
+        _dispensedChemicals.value = dispensedMap
+        _latestStoichiometryResult.value = null
+
         reaction.requiredTool?.let { _activeTool.value = it }
         if (reaction.minTemp > 30.0) {
             _currentTemperature.value = reaction.minTemp
@@ -211,6 +301,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _hasPrecipitate = MutableStateFlow(false)
     val hasPrecipitate: StateFlow<Boolean> = _hasPrecipitate.asStateFlow()
+
+    private val _hasUnreactedSolid = MutableStateFlow(false)
+    val hasUnreactedSolid: StateFlow<Boolean> = _hasUnreactedSolid.asStateFlow()
+
+    private val _unreactedSolidColorHex = MutableStateFlow(0xFF94A3B8L)
+    val unreactedSolidColorHex: StateFlow<Long> = _unreactedSolidColorHex.asStateFlow()
+
+    private val _unreactedSolidName = MutableStateFlow<String?>(null)
+    val unreactedSolidName: StateFlow<String?> = _unreactedSolidName.asStateFlow()
+
+    private val _liquidAlpha = MutableStateFlow(0.78f)
+    val liquidAlpha: StateFlow<Float> = _liquidAlpha.asStateFlow()
 
     private val _isReacting = MutableStateFlow(false)
     val isReacting: StateFlow<Boolean> = _isReacting.asStateFlow()
@@ -313,34 +415,71 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             _isReacting.value = true
 
-            // Temperature adjustment
+            // 1. Calculate Real-Time Stoichiometry (Limiting & Excess Reagents)
+            val stoich = com.example.engine.stoichiometry.StoichiometryEngine.calculateStoichiometry(
+                reaction = rx,
+                initialDispensed = _dispensedChemicals.value
+            )
+            _latestStoichiometryResult.value = stoich
+
+            // 2. Thermodynamic temperature adjustment
             val newTemp = (_currentTemperature.value + rx.tempChange).coerceIn(-10.0, 1500.0)
             _currentTemperature.value = newTemp
 
-            // pH adjustment
-            _currentPh.value = rx.resultingPh
+            // 3. Container Contents: Retain unreacted excess + add synthesized products
+            val updatedDispensed = mutableMapOf<String, com.example.data.model.DispensedChemical>()
+            val updatedActive = mutableMapOf<String, Int>()
 
-            // Liquid color & precipitate
-            _liquidColorHex.value = rx.resultingColor
-            val productsContainSolid = rx.productIds.any { id ->
-                val chem = ChemicalCatalog.getChemical(id)
-                chem?.physicalState?.contains("Solid") == true || chem?.physicalState?.contains("Precipitate") == true
+            // Keep leftover unreacted excess reagents
+            stoich.remainingQuantities.forEach { (rId, rem) ->
+                if (rem.moles > 0.0001) {
+                    updatedDispensed[rId] = rem
+                    updatedActive[rId] = rem.amountValue.toInt().coerceIn(5, 250)
+                }
             }
-            _hasPrecipitate.value = productsContainSolid
 
-            // Replace reactants with products in workbench
-            val updated = mutableMapOf<String, Int>()
-            for (prodId in rx.productIds) {
-                updated[prodId] = 50
+            // Add formed products
+            stoich.productYields.forEach { (pId, yield) ->
+                val chem = yield.chemical
+                val appType = when {
+                    chem.category == com.example.data.model.ChemicalCategory.GAS -> com.example.data.model.DispenserApparatusType.GAS_SYRINGE
+                    chem.physicalState.contains("Liquid") || chem.physicalState.contains("Aqueous") || chem.category == com.example.data.model.ChemicalCategory.ACID || chem.category == com.example.data.model.ChemicalCategory.BASE -> com.example.data.model.DispenserApparatusType.GRADUATED_CYLINDER
+                    else -> com.example.data.model.DispenserApparatusType.ANALYTICAL_BALANCE
+                }
+                val amount = when (appType) {
+                    com.example.data.model.DispenserApparatusType.ANALYTICAL_BALANCE -> yield.massGrams
+                    com.example.data.model.DispenserApparatusType.GRADUATED_CYLINDER -> yield.volumeMl ?: yield.massGrams
+                    com.example.data.model.DispenserApparatusType.GAS_SYRINGE -> yield.molesProduced * 22.414
+                }
+                updatedDispensed[pId] = com.example.data.model.DispensedChemical(
+                    chemical = chem,
+                    apparatusType = appType,
+                    amountValue = amount,
+                    molarity = if (appType == com.example.data.model.DispenserApparatusType.GRADUATED_CYLINDER) (yield.molesProduced / (amount / 1000.0).coerceAtLeast(0.01)) else null,
+                    moles = yield.molesProduced
+                )
+                updatedActive[pId] = amount.toInt().coerceIn(10, 250)
             }
-            _activeChemicals.value = updated
 
-            // Save to Room DB and check for newly discovered compounds
+            _dispensedChemicals.value = updatedDispensed
+            _activeChemicals.value = updatedActive
+
+            // 4. Stoichiometric Solution Blending (Color, pH, Transparency, Precipitate & Excess Solids)
+            val blended = com.example.engine.stoichiometry.StoichiometryEngine.calculateBlendedSolution(rx, stoich)
+            _hasPrecipitate.value = blended.hasSettledPrecipitate
+            _hasUnreactedSolid.value = blended.hasUnreactedSolid
+            _unreactedSolidColorHex.value = blended.unreactedSolidColorHex
+            _unreactedSolidName.value = blended.unreactedSolidName
+            _liquidAlpha.value = blended.transparencyAlpha
+            _currentPh.value = blended.blendedPh
+            _liquidColorHex.value = blended.blendedColorHex
+
+            // 5. Save to Room DB and check for newly discovered compounds
             val alreadyDiscovered = discoveredEntities.value.map { it.id }.toSet()
             val newlyDiscoveredIds = repository.recordReaction(
                 reaction = rx,
                 currentTemp = newTemp,
-                currentPh = rx.resultingPh,
+                currentPh = blended.blendedPh,
                 alreadyDiscoveredIds = alreadyDiscovered
             )
 
@@ -348,13 +487,23 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 ChemicalCatalog.getChemical(id)?.name
             }
 
+            // Notification alert with limiting reagent clarity
+            val limitingChem = ChemicalCatalog.getChemical(stoich.limitingReagentId)
+            val alertObservation = if (stoich.isExactStoichiometricRatio) {
+                "${rx.observation} (Stoichiometrically Balanced: 100% of reactants consumed)."
+            } else {
+                "${rx.observation} [Limiting Reagent: ${limitingChem?.formula ?: stoich.limitingReagentId}]. ${stoich.unreactedExcessDescriptions.joinToString("; ")}"
+            }
+
             _reactionAlert.value = ReactionAlert(
                 equation = rx.equation,
-                observation = rx.observation,
+                observation = alertObservation,
                 newlyDiscoveredNames = newlyDiscoveredNames
             )
 
+            // Cease gas bubbling animations immediately when limiting reagent is exhausted
             _isReacting.value = false
+            recalculateLiquidProperties(skipColorOverride = true)
         }
     }
 
@@ -362,7 +511,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         chemistryEngine.step(dt)
     }
 
-    private fun recalculateLiquidProperties() {
+    private fun recalculateLiquidProperties(skipColorOverride: Boolean = false) {
         chemistryEngine.updateEnvironment(
             tool = _activeTool.value,
             temperature = _currentTemperature.value,
@@ -377,19 +526,65 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             _currentPh.value = 7.0
             _liquidColorHex.value = 0xAA38BDF8L
             _hasPrecipitate.value = false
+            _hasUnreactedSolid.value = false
+            _unreactedSolidName.value = null
+            _liquidAlpha.value = 0.78f
             return
         }
 
-        // Weighted pH approximation
-        val avgPh = chems.map { it.ph }.average()
-        _currentPh.value = (avgPh * 10).roundToInt() / 10.0
+        if (!skipColorOverride) {
+            val dispensedMap = _dispensedChemicals.value
+            val hasDispensed = dispensedMap.isNotEmpty()
 
-        // Dominant liquid color
-        val nonWater = chems.find { it.id != "H2O" }
-        _liquidColorHex.value = nonWater?.colorHex ?: 0xAA38BDF8L
+            val totalMoles = if (hasDispensed) dispensedMap.values.sumOf { it.moles } else chems.size.toDouble()
+            val weightedPh = if (hasDispensed && totalMoles > 0.0) {
+                dispensedMap.values.sumOf { it.moles * it.chemical.ph } / totalMoles
+            } else {
+                chems.map { it.ph }.average()
+            }
+            _currentPh.value = ((weightedPh * 10).roundToInt() / 10.0).coerceIn(0.0, 14.0)
 
-        _hasPrecipitate.value = chems.any {
-            it.physicalState.contains("Solid") || it.physicalState.contains("Precipitate")
+            val hasSolid = if (hasDispensed) {
+                dispensedMap.values.any {
+                    it.chemical.physicalState.contains("Solid", ignoreCase = true) ||
+                    it.chemical.physicalState.contains("Precipitate", ignoreCase = true) ||
+                    it.apparatusType == com.example.data.model.DispenserApparatusType.ANALYTICAL_BALANCE ||
+                    it.chemical.category == com.example.data.model.ChemicalCategory.SALT ||
+                    it.chemical.elementSeries?.contains("Metal") == true
+                }
+            } else {
+                chems.any { it.physicalState.contains("Solid") || it.physicalState.contains("Precipitate") }
+            }
+            _hasPrecipitate.value = hasSolid
+            _hasUnreactedSolid.value = hasSolid
+
+            val nonWaterDispensed = dispensedMap.values.filter { it.chemical.id != "H2O" }
+            if (nonWaterDispensed.isNotEmpty()) {
+                var wr = 0.0
+                var wg = 0.0
+                var wb = 0.0
+                var wMoles = 0.0
+                nonWaterDispensed.forEach { d ->
+                    val c = d.chemical.colorHex
+                    val m = d.moles
+                    wr += ((c shr 16) and 0xFF) * m
+                    wg += ((c shr 8) and 0xFF) * m
+                    wb += (c and 0xFF) * m
+                    wMoles += m
+                }
+                if (wMoles > 0.0) {
+                    val fr = (wr / wMoles).toInt().coerceIn(0, 255)
+                    val fg = (wg / wMoles).toInt().coerceIn(0, 255)
+                    val fb = (wb / wMoles).toInt().coerceIn(0, 255)
+                    _liquidColorHex.value = (0xFFL shl 24) or (fr.toLong() shl 16) or (fg.toLong() shl 8) or fb.toLong()
+                } else {
+                    _liquidColorHex.value = nonWaterDispensed.first().chemical.colorHex
+                }
+            } else {
+                val nonWater = chems.find { it.id != "H2O" }
+                _liquidColorHex.value = nonWater?.colorHex ?: 0xAA38BDF8L
+            }
+            _liquidAlpha.value = if (hasSolid) 0.92f else 0.76f
         }
     }
 }

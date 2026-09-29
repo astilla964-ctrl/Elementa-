@@ -40,6 +40,9 @@ fun LabCanvas(
     isElectricityActive: Boolean,
     isCentrifuging: Boolean,
     hasPrecipitate: Boolean,
+    hasUnreactedSolid: Boolean = false,
+    unreactedSolidColor: Color = Color(0xFF94A3B8),
+    transparencyAlpha: Float = 0.78f,
     isReacting: Boolean,
     particles: List<ElementParticle2D> = emptyList(),
     potentialInteractions: List<PotentialInteraction> = emptyList()
@@ -126,6 +129,9 @@ fun LabCanvas(
                     bubbleProgress = bubbleProgress,
                     bubbleOffsets = bubbleOffsets,
                     hasPrecipitate = hasPrecipitate,
+                    hasUnreactedSolid = hasUnreactedSolid,
+                    unreactedSolidColor = unreactedSolidColor,
+                    transparencyAlpha = transparencyAlpha,
                     isReacting = isReacting
                 )
             }
@@ -143,6 +149,9 @@ fun LabCanvas(
                     bubbleProgress = bubbleProgress,
                     bubbleOffsets = bubbleOffsets,
                     hasPrecipitate = hasPrecipitate,
+                    hasUnreactedSolid = hasUnreactedSolid,
+                    unreactedSolidColor = unreactedSolidColor,
+                    transparencyAlpha = transparencyAlpha,
                     isReacting = isReacting
                 )
             }
@@ -159,6 +168,9 @@ fun LabCanvas(
                     bubbleProgress = bubbleProgress,
                     bubbleOffsets = bubbleOffsets,
                     hasPrecipitate = hasPrecipitate,
+                    hasUnreactedSolid = hasUnreactedSolid,
+                    unreactedSolidColor = unreactedSolidColor,
+                    transparencyAlpha = transparencyAlpha,
                     isReacting = isReacting
                 )
             }
@@ -269,6 +281,9 @@ private fun DrawScope.drawBeaker(
     bubbleProgress: Float,
     bubbleOffsets: List<Pair<Float, Float>>,
     hasPrecipitate: Boolean,
+    hasUnreactedSolid: Boolean,
+    unreactedSolidColor: Color,
+    transparencyAlpha: Float,
     isReacting: Boolean
 ) {
     val left = w * 0.22f
@@ -315,33 +330,64 @@ private fun DrawScope.drawBeaker(
                 path = liquidPath,
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        liquidColor.copy(alpha = 0.72f),
-                        liquidColor.copy(alpha = 0.92f)
+                        liquidColor.copy(alpha = (transparencyAlpha * 0.85f).coerceIn(0.2f, 1f)),
+                        liquidColor.copy(alpha = transparencyAlpha.coerceIn(0.3f, 1f))
                     ),
                     startY = liquidTop,
                     endY = bottom
                 )
             )
 
-            // Precipitate layer at bottom
-            if (hasPrecipitate) {
+            // Precipitate & Unreacted Solid Sediment Bed at bottom
+            if (hasPrecipitate || hasUnreactedSolid) {
                 drawRect(
-                    color = Color(0xFF1E293B).copy(alpha = 0.88f),
-                    topLeft = Offset(left, bottom - 16f),
-                    size = Size(right - left, 16f)
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFF334155).copy(alpha = 0.82f),
+                            Color(0xFF0F172A).copy(alpha = 0.96f)
+                        ),
+                        startY = bottom - 18f,
+                        endY = bottom
+                    ),
+                    topLeft = Offset(left, bottom - 18f),
+                    size = Size(right - left, 18f)
                 )
+
+                // Granular settled particles for excess unreacted solid reagents (e.g. Zinc, Iron, Mg, Sulfur)
+                if (hasUnreactedSolid) {
+                    val grainCount = 14
+                    for (g in 0 until grainCount) {
+                        val gx = left + 14f + (right - left - 28f) * ((g * 0.173f + 0.05f) % 1f)
+                        val gy = bottom - 5f - ((g * 0.317f) % 1f) * 9f
+                        val grainSize = 3.5f + (g % 3) * 1.5f
+                        drawCircle(
+                            color = unreactedSolidColor.copy(alpha = 0.95f),
+                            radius = grainSize,
+                            center = Offset(gx, gy)
+                        )
+                        drawCircle(
+                            color = Color.Black.copy(alpha = 0.45f),
+                            radius = grainSize,
+                            center = Offset(gx, gy),
+                            style = Stroke(width = 0.8f)
+                        )
+                    }
+                }
             }
 
-            // Bubbles inside liquid
-            val isBubbling = isReacting || temperature > 90.0
-            val bubbleCount = if (isBubbling) bubbleOffsets.size else 4
+            // Gas Off-Gassing: Bubbling ceases immediately when reaction completes (limiting reagent exhausted)
+            val bubbleCount = when {
+                isReacting -> bubbleOffsets.size
+                temperature > 95.0 -> bubbleOffsets.size / 2
+                else -> 0 // Cease bubble animation immediately when limiting reagent is exhausted!
+            }
             for (i in 0 until bubbleCount) {
                 val seed = bubbleOffsets[i]
                 val bx = left + (right - left) * (0.15f + seed.first * 0.7f)
                 val by = bottom - ((bubbleProgress + seed.second) % 1f) * liquidHeight
                 val radius = 3.5f + seed.first * 4f
                 drawCircle(
-                    color = Color.White.copy(alpha = 0.65f),
+                    color = Color.White.copy(alpha = 0.70f),
                     radius = radius,
                     center = Offset(bx, by)
                 )
@@ -392,6 +438,9 @@ private fun DrawScope.drawFlask(
     bubbleProgress: Float,
     bubbleOffsets: List<Pair<Float, Float>>,
     hasPrecipitate: Boolean,
+    hasUnreactedSolid: Boolean,
+    unreactedSolidColor: Color,
+    transparencyAlpha: Float,
     isReacting: Boolean
 ) {
     val neckLeft = w * 0.44f
@@ -427,8 +476,8 @@ private fun DrawScope.drawFlask(
             drawRect(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        liquidColor.copy(alpha = 0.70f),
-                        liquidColor.copy(alpha = 0.94f)
+                        liquidColor.copy(alpha = (transparencyAlpha * 0.82f).coerceIn(0.2f, 1f)),
+                        liquidColor.copy(alpha = transparencyAlpha.coerceIn(0.3f, 1f))
                     ),
                     startY = liquidTop,
                     endY = bottom
@@ -451,24 +500,56 @@ private fun DrawScope.drawFlask(
                 lineTo(baseLeft - 20f, liquidTop - 10f)
                 close()
             }
-            drawPath(wavePath, color = liquidColor.copy(alpha = 0.8f))
+            drawPath(wavePath, color = liquidColor.copy(alpha = (transparencyAlpha * 0.9f).coerceIn(0.2f, 1f)))
 
-            if (hasPrecipitate) {
+            // Settled Precipitate & Unreacted Solid Sediment Bed at bottom
+            if (hasPrecipitate || hasUnreactedSolid) {
                 drawRect(
-                    color = Color(0xFF1E293B).copy(alpha = 0.9f),
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFF334155).copy(alpha = 0.85f),
+                            Color(0xFF0F172A).copy(alpha = 0.96f)
+                        ),
+                        startY = bottom - 18f,
+                        endY = bottom
+                    ),
                     topLeft = Offset(baseLeft, bottom - 18f),
                     size = Size(baseRight - baseLeft, 18f)
                 )
+
+                if (hasUnreactedSolid) {
+                    val grainCount = 16
+                    for (g in 0 until grainCount) {
+                        val gx = baseLeft + 16f + (baseRight - baseLeft - 32f) * ((g * 0.173f + 0.05f) % 1f)
+                        val gy = bottom - 5f - ((g * 0.317f) % 1f) * 9f
+                        val grainSize = 3.5f + (g % 3) * 1.5f
+                        drawCircle(
+                            color = unreactedSolidColor.copy(alpha = 0.95f),
+                            radius = grainSize,
+                            center = Offset(gx, gy)
+                        )
+                        drawCircle(
+                            color = Color.Black.copy(alpha = 0.45f),
+                            radius = grainSize,
+                            center = Offset(gx, gy),
+                            style = Stroke(width = 0.8f)
+                        )
+                    }
+                }
             }
 
-            val isBubbling = isReacting || temperature > 90.0
-            val count = if (isBubbling) bubbleOffsets.size else 5
+            // Gas Off-Gassing: Bubbling ceases immediately when reaction completes
+            val count = when {
+                isReacting -> bubbleOffsets.size
+                temperature > 95.0 -> bubbleOffsets.size / 2
+                else -> 0 // Cease bubble animation immediately!
+            }
             for (i in 0 until count) {
                 val seed = bubbleOffsets[i]
                 val bx = baseLeft + (baseRight - baseLeft) * (0.2f + seed.first * 0.6f)
                 val by = bottom - ((bubbleProgress + seed.second) % 1f) * liquidHeight
                 drawCircle(
-                    color = Color.White.copy(alpha = 0.62f),
+                    color = Color.White.copy(alpha = 0.68f),
                     radius = 3.5f + seed.second * 3.5f,
                     center = Offset(bx, by)
                 )
@@ -515,6 +596,9 @@ private fun DrawScope.drawTestTube(
     bubbleProgress: Float,
     bubbleOffsets: List<Pair<Float, Float>>,
     hasPrecipitate: Boolean,
+    hasUnreactedSolid: Boolean,
+    unreactedSolidColor: Color,
+    transparencyAlpha: Float,
     isReacting: Boolean
 ) {
     val tubeLeft = w * 0.40f
@@ -541,8 +625,8 @@ private fun DrawScope.drawTestTube(
             drawRect(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        liquidColor.copy(alpha = 0.72f),
-                        liquidColor.copy(alpha = 0.95f)
+                        liquidColor.copy(alpha = (transparencyAlpha * 0.85f).coerceIn(0.2f, 1f)),
+                        liquidColor.copy(alpha = transparencyAlpha.coerceIn(0.3f, 1f))
                     ),
                     startY = liquidTop,
                     endY = bottom
@@ -551,22 +635,54 @@ private fun DrawScope.drawTestTube(
                 size = Size((tubeRight - tubeLeft) + 20f, liquidHeight + 20f)
             )
 
-            if (hasPrecipitate) {
+            // Settled precipitate rounded bottom
+            if (hasPrecipitate || hasUnreactedSolid) {
                 drawCircle(
-                    color = Color(0xFF1E293B).copy(alpha = 0.9f),
-                    radius = radius * 0.9f,
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            Color(0xFF334155).copy(alpha = 0.88f),
+                            Color(0xFF0F172A).copy(alpha = 0.96f)
+                        ),
+                        center = Offset(w * 0.5f, bottom - radius),
+                        radius = radius * 0.95f
+                    ),
+                    radius = radius * 0.95f,
                     center = Offset(w * 0.5f, bottom - radius)
                 )
+
+                if (hasUnreactedSolid) {
+                    val grainCount = 10
+                    for (g in 0 until grainCount) {
+                        val gx = (w * 0.5f) - (radius * 0.6f) + (radius * 1.2f) * ((g * 0.231f) % 1f)
+                        val gy = bottom - radius * 0.8f + (radius * 0.5f) * ((g * 0.417f) % 1f)
+                        val grainSize = 2.8f + (g % 3) * 1.2f
+                        drawCircle(
+                            color = unreactedSolidColor.copy(alpha = 0.95f),
+                            radius = grainSize,
+                            center = Offset(gx, gy)
+                        )
+                        drawCircle(
+                            color = Color.Black.copy(alpha = 0.45f),
+                            radius = grainSize,
+                            center = Offset(gx, gy),
+                            style = Stroke(width = 0.7f)
+                        )
+                    }
+                }
             }
 
-            val isBubbling = isReacting || temperature > 90.0
-            val count = if (isBubbling) 10 else 3
+            // Gas Off-Gassing: Bubbling ceases immediately when reaction completes
+            val count = when {
+                isReacting -> 10
+                temperature > 95.0 -> 5
+                else -> 0 // Cease bubble animation immediately!
+            }
             for (i in 0 until count) {
                 val seed = bubbleOffsets[i]
                 val bx = tubeLeft + (tubeRight - tubeLeft) * (0.25f + seed.first * 0.5f)
                 val by = bottom - ((bubbleProgress + seed.second) % 1f) * liquidHeight
                 drawCircle(
-                    color = Color.White.copy(alpha = 0.65f),
+                    color = Color.White.copy(alpha = 0.68f),
                     radius = 3f + seed.second * 3f,
                     center = Offset(bx, by)
                 )

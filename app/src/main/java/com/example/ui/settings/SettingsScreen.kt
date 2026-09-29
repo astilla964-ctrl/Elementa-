@@ -622,6 +622,13 @@ fun SettingsScreen(
         val fullChangelogText = """
 # Elementa — Automatic Changelog
 
+### [v1.4.0] — 2026-09-29
+- Quantitative Chemistry & Stoichiometry Module: Integrated in-lab measurement apparatuses (Analytical Balance & Spatula in grams, Graduated Cylinder & Precision Buret in mL/M, Gastight Gas Syringe at STP in L).
+- Real-Time Stoichiometric Engine: Mass-to-mole conversions, limiting & excess reagent calculations, theoretical yields, and exact unreacted remainder accounting.
+- Canvas & Container Rendering of Remainders: Realistic settled precipitate sediment bed and excess solid granules rendered on beaker/flask/tube canvas; stoichiometric weighted liquid color blending, transparency, and pH level.
+- Immediate Gas Bubbling Cessation: Gas off-gassing ceases the moment the limiting reagent is exhausted.
+- Quantitative Reaction Log Interface: Live bottom drawer presenting reagent inputs, limiting reagent highlight, theoretical product yields, and leftover excess breakdown.
+
 ### [v1.3.0] — 2026-09-29
 - 100 New Chemical Reactions Generated: Expanded simulation engine to 238 total reactions (rxn_106 through rxn_205), including Prussian Blue, Elephant's Toothpaste, Thermite, Chemical Gardens, and more.
 - 95+ New Chemical Compounds: Added MoreExtendedChemicals.kt providing full physical, thermodynamic, and hazard specs for all newly synthesizable species.
@@ -705,9 +712,23 @@ fun SettingsScreen(
                         fontWeight = FontWeight.Bold
                     )
 
+                    // v1.4.0
+                    ChangelogCard(
+                        version = "v1.4.0 (Current)",
+                        date = "2026-09-29",
+                        highlights = listOf(
+                            "Quantitative Measurement Apparatuses: Analytical Balance (g), Graduated Cylinder/Buret (mL, M), and Gas Syringe (L STP).",
+                            "Real-Time Stoichiometric Engine: Mass-to-mole conversions, limiting & excess reagents, theoretical yields, and leftover remainder tracking.",
+                            "Dynamic Container Rendering: Settled precipitate sediment & granular solid particles; weighted liquid color, transparency, and pH blending.",
+                            "Gas Off-Gassing: Bubbling animations cease immediately when limiting reagent is exhausted.",
+                            "Quantitative Reaction Log Drawer: Live breakdown of inputs, limiting reagent highlight, product yields, and unreacted remainders."
+                        ),
+                        isLatest = true
+                    )
+
                     // v1.3.0
                     ChangelogCard(
-                        version = "v1.3.0 (Current)",
+                        version = "v1.3.0",
                         date = "2026-09-29",
                         highlights = listOf(
                             "100 New Chemical Reactions: Expanded from 105 to 205+ reactions (rxn_106 through rxn_205) ready to simulate.",
@@ -715,7 +736,7 @@ fun SettingsScreen(
                             "Reactions across Organic Synthesis, Thermite, Coordination Chemistry, and Electrochemistry.",
                             "Full 1-click loading into workbench reaction vessel."
                         ),
-                        isLatest = true
+                        isLatest = false
                     )
 
                     // v1.2.0

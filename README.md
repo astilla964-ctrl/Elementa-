@@ -38,6 +38,24 @@
 
 > *This section is automatically updated by GitHub Actions upon each new release tag.*
 
+### [v1.4.0] — 2026-09-29
+#### 🚀 Added
+- **Quantitative Measurement & Dispensing Apparatuses**:
+  - *Analytical Balance & Spatula*: 4-decimal precision balance measuring solid mass in grams (`g`) with tare functionality.
+  - *Graduated Cylinder & Precision Buret*: Calibrated volumetric glassware dispensing aliquot volumes in milliliters (`mL`) and solution concentrations in molarity (`M`).
+  - *Gastight Gas Syringe & STP Pressure Valve*: Sealed calibrated syringe measuring vapor volumes at Standard Temperature & Pressure (`22.414 L/mol`).
+- **Real-Time Stoichiometric Engine (Limiting & Excess Reagents)**:
+  - *Mass-to-Mole & Volume-to-Mole Conversions*: $n = m / M$ or $n = M \times V$ or $n = V_{STP} / 22.414$.
+  - *Balanced Coefficient Parser & Limiting Reactant Identification*: Compares reactant molar ratios against stoichiometric coefficients to strictly identify limiting and excess reagents.
+  - *Product Yields & Unreacted Remainders*: Calculates exact theoretical yields of synthesized products and explicit leftover unreacted excess reagents.
+- **Dynamic Container & Canvas Rendering of Unreacted Remainders**:
+  - *Precipitates & Mixtures*: Renders settled precipitate sediment beds alongside granular crystalline solid particles for unreacted excess reagents at the bottom of the container.
+  - *Unreacted Solutions/Liquids*: Computes real-time dynamic liquid color blending, transparency/turbidity alpha, and pH levels as a weighted average of formed products and excess reagents.
+  - *Gas Off-Gassing Cessation*: Immediately ceases reaction gas bubble animations when the limiting reagent is exhausted.
+- **Quantitative Reaction Log Interface**: Real-time bottom drawer displaying initial inputs, limiting reagent highlight in red/amber, theoretical product yields, and unreacted remainder descriptions.
+
+---
+
 ### [v1.3.0] — 2026-09-29
 #### 🚀 Added
 - **100 New Chemical Reactions (`rxn_106` through `rxn_205`)**: Expanded the simulation engine to 238 total verified reactions ready to simulate.

@@ -4,6 +4,9 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
+import com.example.data.model.DispensedChemical
+import com.example.ui.components.QuantitativeDispenserModal
+import com.example.ui.components.QuantitativeLogDrawer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -80,6 +83,8 @@ fun LabWorkbenchScreen(
 ) {
     val activeTool by viewModel.activeTool.collectAsStateWithLifecycle()
     val activeChemicals by viewModel.activeChemicals.collectAsStateWithLifecycle()
+    val dispensedChemicals by viewModel.dispensedChemicals.collectAsStateWithLifecycle()
+    val latestStoichiometryResult by viewModel.latestStoichiometryResult.collectAsStateWithLifecycle()
     val temperature by viewModel.currentTemperature.collectAsStateWithLifecycle()
     val pressure by viewModel.currentPressure.collectAsStateWithLifecycle()
     val isHeating by viewModel.isHeating.collectAsStateWithLifecycle()
@@ -88,6 +93,9 @@ fun LabWorkbenchScreen(
     val currentPh by viewModel.currentPh.collectAsStateWithLifecycle()
     val liquidColorHex by viewModel.liquidColorHex.collectAsStateWithLifecycle()
     val hasPrecipitate by viewModel.hasPrecipitate.collectAsStateWithLifecycle()
+    val hasUnreactedSolid by viewModel.hasUnreactedSolid.collectAsStateWithLifecycle()
+    val unreactedSolidColorHex by viewModel.unreactedSolidColorHex.collectAsStateWithLifecycle()
+    val liquidAlpha by viewModel.liquidAlpha.collectAsStateWithLifecycle()
     val isReacting by viewModel.isReacting.collectAsStateWithLifecycle()
     val reactionAlert by viewModel.reactionAlert.collectAsStateWithLifecycle()
     val engineState by viewModel.engineState.collectAsStateWithLifecycle()
@@ -101,6 +109,7 @@ fun LabWorkbenchScreen(
 
     var showChemicalSelector by remember { mutableStateOf(false) }
     var showReactionGuide by remember { mutableStateOf(false) }
+    var pendingDispenseChemical by remember { mutableStateOf<com.example.data.model.Chemical?>(null) }
 
     val liquidFill = if (activeChemicals.isEmpty()) 0.0f else (activeChemicals.values.sum() / 250f).coerceIn(0.18f, 0.85f)
 
@@ -156,9 +165,20 @@ fun LabWorkbenchScreen(
                             isElectricityActive = isElectricityActive,
                             isCentrifuging = isCentrifuging,
                             hasPrecipitate = hasPrecipitate,
+                            hasUnreactedSolid = hasUnreactedSolid,
+                            unreactedSolidColor = Color(unreactedSolidColorHex),
+                            transparencyAlpha = liquidAlpha,
                             isReacting = isReacting,
                             particles = engineState.particles,
                             potentialInteractions = engineState.potentialInteractions
+                        )
+                    }
+
+                    if (latestStoichiometryResult != null) {
+                        QuantitativeLogDrawer(
+                            stoichiometryResult = latestStoichiometryResult,
+                            onDismiss = { viewModel.dismissStoichiometryResult() },
+                            modifier = Modifier.padding(top = 8.dp)
                         )
                     }
                 }
@@ -189,8 +209,10 @@ fun LabWorkbenchScreen(
 
                     ActiveContentsSection(
                         chemicals = activeChemicals,
+                        dispensedChemicals = dispensedChemicals,
                         onRemove = { viewModel.removeChemical(it) },
-                        onOpenAdd = { showChemicalSelector = true }
+                        onOpenAdd = { showChemicalSelector = true },
+                        onEditDispense = { pendingDispenseChemical = it }
                     )
 
                     ReactionControlsSection(
@@ -261,12 +283,22 @@ fun LabWorkbenchScreen(
                             isElectricityActive = isElectricityActive,
                             isCentrifuging = isCentrifuging,
                             hasPrecipitate = hasPrecipitate,
+                            hasUnreactedSolid = hasUnreactedSolid,
+                            unreactedSolidColor = Color(unreactedSolidColorHex),
+                            transparencyAlpha = liquidAlpha,
                             isReacting = isReacting,
                             particles = engineState.particles,
                             potentialInteractions = engineState.potentialInteractions
                         )
                     }
                 }
+            }
+
+            if (latestStoichiometryResult != null) {
+                QuantitativeLogDrawer(
+                    stoichiometryResult = latestStoichiometryResult,
+                    onDismiss = { viewModel.dismissStoichiometryResult() }
+                )
             }
 
             ReactionBanner(
@@ -276,8 +308,10 @@ fun LabWorkbenchScreen(
 
             ActiveContentsSection(
                 chemicals = activeChemicals,
+                dispensedChemicals = dispensedChemicals,
                 onRemove = { viewModel.removeChemical(it) },
-                onOpenAdd = { showChemicalSelector = true }
+                onOpenAdd = { showChemicalSelector = true },
+                onEditDispense = { pendingDispenseChemical = it }
             )
 
             ReactionControlsSection(
@@ -301,9 +335,21 @@ fun LabWorkbenchScreen(
     if (showChemicalSelector) {
         ChemicalDispenserSheet(
             onDismiss = { showChemicalSelector = false },
-            onAddChemical = { id ->
-                viewModel.addChemical(id)
+            onSelectChemical = { chem ->
                 showChemicalSelector = false
+                pendingDispenseChemical = chem
+            }
+        )
+    }
+
+    // Quantitative Measurement & Dispenser Modal (Apparatuses: Balance, Cylinder, Syringe)
+    if (pendingDispenseChemical != null) {
+        QuantitativeDispenserModal(
+            chemical = pendingDispenseChemical!!,
+            onDismiss = { pendingDispenseChemical = null },
+            onConfirmDispense = { dispensed ->
+                viewModel.dispenseChemical(dispensed)
+                pendingDispenseChemical = null
             }
         )
     }
@@ -460,8 +506,10 @@ private fun StatusTelemetryRow(
 @Composable
 private fun ActiveContentsSection(
     chemicals: Map<String, Int>,
+    dispensedChemicals: Map<String, DispensedChemical> = emptyMap(),
     onRemove: (String) -> Unit,
-    onOpenAdd: () -> Unit
+    onOpenAdd: () -> Unit,
+    onEditDispense: (com.example.data.model.Chemical) -> Unit = {}
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -479,12 +527,19 @@ private fun ActiveContentsSection(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "Vessel Contents",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+                Column {
+                    Text(
+                        text = "Vessel Contents (Measured)",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = if (chemicals.isEmpty()) "Empty" else "${chemicals.size} reagent(s) in container",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 Button(
                     onClick = onOpenAdd,
                     colors = ButtonDefaults.buttonColors(
@@ -501,7 +556,7 @@ private fun ActiveContentsSection(
 
             if (chemicals.isEmpty()) {
                 Text(
-                    text = "Apparatus is empty. Tap '+ Add Reagent' to pour starting chemicals.",
+                    text = "Apparatus is empty. Tap '+ Add Reagent' to measure and dispense reactants.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -513,18 +568,23 @@ private fun ActiveContentsSection(
                     chemicals.forEach { (chemId, amount) ->
                         val chem = ChemicalCatalog.getChemical(chemId)
                         val name = chem?.formula ?: chemId
+                        val dispensed = dispensedChemicals[chemId]
+
                         Surface(
                             shape = RoundedCornerShape(12.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant,
                             border = androidx.compose.foundation.BorderStroke(
                                 1.dp,
                                 MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
-                            )
+                            ),
+                            modifier = Modifier.clickable {
+                                if (chem != null) onEditDispense(chem)
+                            }
                         ) {
                             Row(
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
                                 Box(
                                     modifier = Modifier
@@ -532,20 +592,36 @@ private fun ActiveContentsSection(
                                         .clip(CircleShape)
                                         .background(Color(chem?.colorHex ?: 0xFF0284C7L))
                                 )
-                                Text(
-                                    text = "$name (${amount}mL)",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.SemiBold
-                                )
+                                Column {
+                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        Text(
+                                            text = name,
+                                            style = MaterialTheme.typography.labelMedium,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        if (dispensed != null) {
+                                            Text(
+                                                text = dispensed.apparatusType.iconEmoji,
+                                                fontSize = 11.sp
+                                            )
+                                        }
+                                    }
+                                    Text(
+                                        text = dispensed?.displayCompact ?: "${amount}mL",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontFamily = FontFamily.Monospace,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                                 IconButton(
                                     onClick = { onRemove(chemId) },
-                                    modifier = Modifier.size(18.dp)
+                                    modifier = Modifier.size(20.dp)
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Close,
                                         contentDescription = "Remove",
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.size(12.dp)
+                                        modifier = Modifier.size(14.dp)
                                     )
                                 }
                             }
@@ -799,7 +875,7 @@ private fun ReactionBanner(
 @Composable
 private fun ChemicalDispenserSheet(
     onDismiss: () -> Unit,
-    onAddChemical: (String) -> Unit
+    onSelectChemical: (com.example.data.model.Chemical) -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("All Elements (118)") }
@@ -895,7 +971,7 @@ private fun ChemicalDispenserSheet(
                     filtered.forEach { chem ->
                         Surface(
                             modifier = Modifier
-                                .clickable { onAddChemical(chem.id) }
+                                .clickable { onSelectChemical(chem) }
                                 .testTag("chemical_chip_${chem.id}"),
                             shape = RoundedCornerShape(12.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant,
