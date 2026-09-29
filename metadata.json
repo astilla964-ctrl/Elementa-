@@ -1,0 +1,6 @@
+{
+  "name": "Elementa",
+  "description": "Realistic 2D Chemistry Simulation and Lab Management Tool developed by Astilla Softwares.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
