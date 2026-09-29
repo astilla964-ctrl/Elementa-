@@ -9,6 +9,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_HISTORY: ChangelogEntry[] = [
   {
+    version: "Elementa v1.6.0 (Build 5)",
+    date: "2026-09-30",
+    changes: [
+      { type: "feat", description: "Quest & Career Mode with client contracts schema, requirements, and credit rewards" },
+      { type: "feat", description: "Offline Room database persistence for completed assignments and lifetime career statistics" },
+      { type: "ui", description: "Dedicated Career & Lab Assignments screen with career rank ladders and contract inspector" }
+    ]
+  },
+  {
     version: "Elementa v1.5.0 (Build 4)",
     date: "2026-09-30",
     changes: [

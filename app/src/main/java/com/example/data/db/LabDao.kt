@@ -28,4 +28,19 @@ interface LabDao {
 
     @Query("DELETE FROM discovered_compounds WHERE id NOT IN (:preUnlockedIds)")
     suspend fun resetDiscovered(preUnlockedIds: List<String>)
+
+    @Query("SELECT * FROM completed_assignments")
+    fun getAllCompletedAssignments(): Flow<List<CompletedAssignmentEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCompletedAssignment(assignment: CompletedAssignmentEntity)
+
+    @Query("SELECT * FROM career_stats WHERE id = 1")
+    fun getCareerStats(): Flow<CareerStatsEntity?>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun updateCareerStats(stats: CareerStatsEntity)
+
+    @Query("DELETE FROM completed_assignments")
+    suspend fun clearCompletedAssignments()
 }

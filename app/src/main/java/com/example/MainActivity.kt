@@ -20,9 +20,11 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Science
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Assignment
 import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material.icons.outlined.Science
 import androidx.compose.material.icons.outlined.Settings
@@ -46,6 +48,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ui.AppScreen
 import com.example.ui.MainViewModel
 import com.example.ui.OrientationSetting
+import com.example.ui.assignments.AssignmentsScreen
 import com.example.ui.compounds.CompoundsScreen
 import com.example.ui.lab.LabWorkbenchScreen
 import com.example.ui.settings.SettingsScreen
@@ -153,6 +156,20 @@ fun ElementaApp(viewModel: MainViewModel) {
                 )
 
                 NavigationRailItem(
+                    selected = currentScreen == AppScreen.ASSIGNMENTS,
+                    onClick = { viewModel.navigateTo(AppScreen.ASSIGNMENTS) },
+                    icon = {
+                        Icon(
+                            imageVector = if (currentScreen == AppScreen.ASSIGNMENTS) Icons.Filled.Assignment else Icons.Outlined.Assignment,
+                            contentDescription = "Assignments",
+                            modifier = Modifier.size(24.dp)
+                        )
+                    },
+                    label = { Text("Quests", fontSize = 11.sp) },
+                    modifier = Modifier.testTag("nav_assignments")
+                )
+
+                NavigationRailItem(
                     selected = currentScreen == AppScreen.SETTINGS,
                     onClick = { viewModel.navigateTo(AppScreen.SETTINGS) },
                     icon = {
@@ -230,6 +247,20 @@ fun ElementaApp(viewModel: MainViewModel) {
                     )
 
                     NavigationBarItem(
+                        selected = currentScreen == AppScreen.ASSIGNMENTS,
+                        onClick = { viewModel.navigateTo(AppScreen.ASSIGNMENTS) },
+                        icon = {
+                            Icon(
+                                imageVector = if (currentScreen == AppScreen.ASSIGNMENTS) Icons.Filled.Assignment else Icons.Outlined.Assignment,
+                                contentDescription = "Assignments",
+                                modifier = Modifier.size(24.dp)
+                            )
+                        },
+                        label = { Text("Quests", fontSize = 12.sp) },
+                        modifier = Modifier.testTag("nav_assignments")
+                    )
+
+                    NavigationBarItem(
                         selected = currentScreen == AppScreen.SETTINGS,
                         onClick = { viewModel.navigateTo(AppScreen.SETTINGS) },
                         icon = {
@@ -270,6 +301,7 @@ private fun ScreenContent(
         AppScreen.LAB -> LabWorkbenchScreen(viewModel = viewModel, isLandscape = isLandscape)
         AppScreen.TOOLS -> ToolsScreen(viewModel = viewModel, isLandscape = isLandscape)
         AppScreen.COMPOUNDS -> CompoundsScreen(viewModel = viewModel, isLandscape = isLandscape)
+        AppScreen.ASSIGNMENTS -> AssignmentsScreen(viewModel = viewModel, isLandscape = isLandscape)
         AppScreen.SETTINGS -> SettingsScreen(viewModel = viewModel, isLandscape = isLandscape)
     }
 }

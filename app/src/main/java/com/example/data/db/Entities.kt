@@ -19,3 +19,19 @@ data class ReactionLogEntity(
     val ph: Double,
     val timestamp: Long = System.currentTimeMillis()
 )
+
+@Entity(tableName = "completed_assignments")
+data class CompletedAssignmentEntity(
+    @PrimaryKey val id: String,
+    val completedAt: Long = System.currentTimeMillis(),
+    val earnedCredits: Int,
+    val unlockedToolId: String? = null
+)
+
+@Entity(tableName = "career_stats")
+data class CareerStatsEntity(
+    @PrimaryKey val id: Int = 1,
+    val totalCredits: Int = 0,
+    val completedQuestCount: Int = 0
+)
+

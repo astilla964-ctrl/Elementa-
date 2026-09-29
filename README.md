@@ -25,6 +25,7 @@
   - *Thermodynamic Physics & Activation Logic*: Calculates thermal and pressure states dynamically before triggering reactions. Enforces Activation Energy ($E_a$) heat thresholds, dynamic phase transitions (melting, freezing, boiling, condensation), and realistic exothermic ($\Delta H < 0$) / endothermic ($\Delta H > 0$) enthalpy balance.
   - *Glassware Safety & Container Hazards*: Simulates physical limits of laboratory containers including thermal shock cracking and overpressurization container explosions ($PV = nRT > 5\text{ atm}$) with shattered glass shards, workbench liquid spills, and 1-tap glassware replacement.
   - *Visual Thermal Rendering & Live Telemetry*: High-temperature glass glow heat maps (>500°C red glow, >900°C bright incandescent orange/yellow), steam/vapor effervescence, condensation misting, floating container digital sensor badges, and live interactive heat curve graphs (Temp vs. Time) with 60-sample telemetry buffering.
+- **📋 Quest & Career Mode ("Lab Assignments")**: Commercial client contracts with stoichiometric purity requirements, credit compensation, apparatus unlocks, and career progression ranks (*Apprentice Researcher* to *Chief Laboratory Director*).
 - **🔬 118 Periodic Elements & 165+ Extended Compounds**: Complete physical profiles including molar mass, STP state, density, pH, GHS/NFPA hazard classifications, and boiling/melting points.
 - **⚡ 238 Fully-Simulated Reactions**: Acid-base neutralizations, coordination complexes, combustion reactions, single & double displacements, organic syntheses, pyrotechnics, and electrochemical electrolysis.
 - **🎨 2D Physics Particle Engine**: Real-time particle canvas rendering Brownian agitation, buoyancy, phase transitions, and visual particle archetypes (`bubble`, `vapor`, `crystal`, `fluid`).
@@ -43,6 +44,27 @@
 ## 📜 Automatic Changelog
 
 > *This section is automatically updated by GitHub Actions upon each new release tag.*
+
+### [v1.6.0] — 2026-09-30
+#### 🚀 Added
+- **Quest & Career Mode ("Lab Assignments")**:
+  - *Contract & Quest Data Schema*: Strongly typed `LabAssignment` contract schema implemented in Kotlin and TypeScript defining client specifications, target chemical compound (`targetCompoundId`), required mass/volume (`targetAmount` in g/mL), minimum purity percentage threshold (`minPurity`), credit rewards, and optional equipment unlocks (`unlocksToolId`).
+  - *Commercial Client Contracts Catalog*: Built-in corporate contracts spanning authentic chemistry challenges:
+    - **PharmaCorp Synthetics**: *Synthesize Aspirin* (Clinical trial batch of Acetylsalicylic Acid `C9H8O4` @ $\ge 90\%$ purity, unlocking `CONDENSER`).
+    - **City Water Authority**: *Neutralize Acid Runoff* (Effluent titration using sodium hydroxide to yield clean brine `NaCl` @ $\ge 95\%$ purity, unlocking `TITRATION_BURET`).
+    - **Apex Metallurgy**: *Calcinate Iron Oxide Pigment* (Thermal oxidation of iron salts to precipitate `Fe2O3` @ $\ge 88\%$ purity, unlocking `CRUCIBLE`).
+    - **GreenBio AgroChem**: *Synthesize Ammonia Precursor* (Catalytic nitrogen fixation producing `NH3` @ $\ge 90\%$ purity, unlocking `GAS_SYRINGE`).
+    - **Metro Power & Grid**: *Electrolytic Copper Sulfate* (Synthesizing conductive `CuSO4` crystals @ $\ge 92\%$ purity, unlocking `ELECTRODES`).
+    - **Aerospace Atmospheric Systems**: *Decompose Calcium Carbonate* (Thermal calcination yielding high-grade `CO2` gas @ $\ge 95\%$ purity, unlocking `EVAPORATING_DISH`).
+    - **Photonic NanoTech**: *Silver Chloride Halide Precipitation* (Stoichiometric metathesis yielding `AgCl` @ $\ge 98\%$ purity, unlocking `CENTRIFUGE`).
+  - *Room Database Career Persistence*: Offline local persistence with `completed_assignments` and `career_stats` SQLite tables tracking completed contracts, unlocked equipment, and lifetime earned credits.
+  - *Interactive Career & Lab Assignments UI (`AssignmentsScreen.kt`)*:
+    - Career rank ladder (*Apprentice Researcher* $\to$ *Junior Lab Associate* $\to$ *Analytical Chemist* $\to$ *Senior Synthetic Chemist* $\to$ *Chief Laboratory Director*).
+    - Real-time credit balance badge, visual completion progress indicator bar, and quick status filters (*All*, *Available*, *Fulfilled*).
+    - Detailed Contract Inspector bottom sheet modal allowing players to review client briefings, navigate directly to the lab workbench, and deliver batches to claim rewards.
+  - *Adaptive Navigation*: Added dedicated "Quests" destination across portrait bottom navigation and landscape side navigation rail.
+
+---
 
 ### [v1.5.0] — 2026-09-30
 #### 🚀 Added

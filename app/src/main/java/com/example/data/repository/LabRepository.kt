@@ -1,14 +1,19 @@
 package com.example.data.repository
 
+import com.example.data.db.CareerStatsEntity
+import com.example.data.db.CompletedAssignmentEntity
 import com.example.data.db.DiscoveredCompoundEntity
 import com.example.data.db.LabDao
 import com.example.data.db.ReactionLogEntity
+import com.example.data.model.AssignmentCatalog
 import com.example.data.model.ChemicalCatalog
 import com.example.data.model.Compound
+import com.example.data.model.LabAssignment
 import com.example.data.model.Reaction
 import com.example.data.model.toCompound
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -20,6 +25,15 @@ class LabRepository(private val labDao: LabDao) {
 
     val discoveredEntities: Flow<List<DiscoveredCompoundEntity>> = labDao.getAllDiscovered()
     val reactionLogs: Flow<List<ReactionLogEntity>> = labDao.getReactionLogs()
+    val completedAssignments: Flow<List<CompletedAssignmentEntity>> = labDao.getAllCompletedAssignments()
+    val careerStats: Flow<CareerStatsEntity?> = labDao.getCareerStats()
+
+    val assignments: Flow<List<LabAssignment>> = completedAssignments.map { completedList ->
+        val completedIds = completedList.map { it.id }.toSet()
+        AssignmentCatalog.DEFAULT_ASSIGNMENTS.map { assignment ->
+            assignment.copy(isCompleted = assignment.id in completedIds)
+        }
+    }
 
     val compounds: Flow<List<Compound>> = discoveredEntities.map { entities ->
         val discoveredIds = entities.map { it.id }.toSet()
@@ -91,6 +105,29 @@ class LabRepository(private val labDao: LabDao) {
 
     suspend fun clearLogs() = withContext(Dispatchers.IO) {
         labDao.clearReactionLogs()
+    }
+
+    suspend fun completeAssignment(assignment: LabAssignment) = withContext(Dispatchers.IO) {
+        labDao.insertCompletedAssignment(
+            CompletedAssignmentEntity(
+                id = assignment.id,
+                completedAt = System.currentTimeMillis(),
+                earnedCredits = assignment.rewards.credits,
+                unlockedToolId = assignment.rewards.unlocksToolId
+            )
+        )
+        val currentStats = labDao.getCareerStats().firstOrNull() ?: CareerStatsEntity()
+        labDao.updateCareerStats(
+            currentStats.copy(
+                totalCredits = currentStats.totalCredits + assignment.rewards.credits,
+                completedQuestCount = currentStats.completedQuestCount + 1
+            )
+        )
+    }
+
+    suspend fun resetAssignments() = withContext(Dispatchers.IO) {
+        labDao.clearCompletedAssignments()
+        labDao.updateCareerStats(CareerStatsEntity(id = 1, totalCredits = 0, completedQuestCount = 0))
     }
 
     suspend fun checkLatestRelease(): Result<String> = withContext(Dispatchers.IO) {

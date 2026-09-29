@@ -6,13 +6,16 @@ import android.content.pm.ActivityInfo
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.db.AppDatabase
+import com.example.data.db.CareerStatsEntity
 import com.example.data.db.DiscoveredCompoundEntity
 import com.example.data.db.ReactionLogEntity
+import com.example.data.model.AssignmentCatalog
 import com.example.data.model.Chemical
 import com.example.data.model.ChemicalCatalog
 import com.example.data.model.ChemicalCategory
 import com.example.data.model.Compound
 import com.example.data.model.ContainerHazardState
+import com.example.data.model.LabAssignment
 import com.example.data.model.LabToolType
 import com.example.data.model.PressureMode
 import com.example.data.model.Reaction
@@ -27,6 +30,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlin.math.max
@@ -38,6 +42,7 @@ enum class AppScreen {
     LAB,
     TOOLS,
     COMPOUNDS,
+    ASSIGNMENTS,
     SETTINGS
 }
 
@@ -82,6 +87,41 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun navigateTo(screen: AppScreen) {
         _currentScreen.value = screen
+    }
+
+    // Lab Assignments & Career Mode
+    val assignments: StateFlow<List<LabAssignment>> = repository.assignments
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = AssignmentCatalog.DEFAULT_ASSIGNMENTS
+        )
+
+    val careerStats: StateFlow<CareerStatsEntity> = repository.careerStats
+        .map { it ?: CareerStatsEntity() }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = CareerStatsEntity()
+        )
+
+    private val _selectedAssignment = MutableStateFlow<LabAssignment?>(null)
+    val selectedAssignment: StateFlow<LabAssignment?> = _selectedAssignment.asStateFlow()
+
+    fun selectAssignment(assignment: LabAssignment?) {
+        _selectedAssignment.value = assignment
+    }
+
+    fun completeAssignment(assignment: LabAssignment) {
+        viewModelScope.launch {
+            repository.completeAssignment(assignment)
+        }
+    }
+
+    fun resetAssignments() {
+        viewModelScope.launch {
+            repository.resetAssignments()
+        }
     }
 
     // Theme & Orientation

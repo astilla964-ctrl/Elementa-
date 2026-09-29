@@ -29,6 +29,15 @@ data class ChangelogEntry(
 object ChangelogRegistry {
     val CHANGELOG_HISTORY: List<ChangelogEntry> = listOf(
         ChangelogEntry(
+            version = "Elementa v1.6.0 (Build 5)",
+            date = "2026-09-30",
+            changes = listOf(
+                ChangeItem(ChangeType.FEAT, "Quest & Career Mode with client contracts schema, requirements, and credit rewards"),
+                ChangeItem(ChangeType.FEAT, "Offline Room database persistence for completed assignments and lifetime career statistics"),
+                ChangeItem(ChangeType.UI, "Dedicated Career & Lab Assignments screen with career rank ladders and contract inspector")
+            )
+        ),
+        ChangelogEntry(
             version = "Elementa v1.5.0 (Build 4)",
             date = "2026-09-30",
             changes = listOf(

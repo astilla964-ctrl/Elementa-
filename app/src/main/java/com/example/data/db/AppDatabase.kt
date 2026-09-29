@@ -6,8 +6,13 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [DiscoveredCompoundEntity::class, ReactionLogEntity::class],
-    version = 1,
+    entities = [
+        DiscoveredCompoundEntity::class,
+        ReactionLogEntity::class,
+        CompletedAssignmentEntity::class,
+        CareerStatsEntity::class
+    ],
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -23,7 +28,9 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "elementa_database"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }
