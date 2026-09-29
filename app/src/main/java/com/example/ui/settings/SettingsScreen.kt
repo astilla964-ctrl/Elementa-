@@ -622,6 +622,11 @@ fun SettingsScreen(
         val fullChangelogText = """
 # Elementa — Automatic Changelog
 
+### [v1.3.0] — 2026-09-29
+- 100 New Chemical Reactions Generated: Expanded simulation engine to 205+ total reactions (rxn_106 through rxn_205), including Prussian Blue, Elephant's Toothpaste, Thermite, Chemical Gardens, and more.
+- 95+ New Chemical Compounds: Added MoreExtendedChemicals.kt providing full physical, thermodynamic, and hazard specs for all newly synthesizable species.
+- Complete Reaction Guide: Reaction Notebook now catalogs over 238 total reactions ready to simulate with 1-click vessel loading.
+
 ### [v1.2.0] — 2026-09-29
 - Full 105 Reactions Engine Integration: All 105 reactions from chemistry_reactions_105.json and seed reactions are compiled into AllReactionsCatalog.kt and wired into ChemistryEngine.kt.
 - Extended Compounds Registry: Created ExtendedChemicals.kt covering 70 previously missing compound species (AgNO₃, CuSO₄, Pb(NO₃)₂, KMnO₄, AlCl₃, BaSO₄, CH₃COOH, C₃H₈, etc.).
@@ -682,7 +687,7 @@ fun SettingsScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text("Current Release:", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
-                                Text("v1.2.0 (Latest)", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                Text("v1.3.0 (Latest)", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                             }
                             Text(
                                 text = "Automated GitHub workflow syncs this changelog directly to the repository front README.",
@@ -699,9 +704,22 @@ fun SettingsScreen(
                         fontWeight = FontWeight.Bold
                     )
 
+                    // v1.3.0
+                    ChangelogCard(
+                        version = "v1.3.0 (Current)",
+                        date = "2026-09-29",
+                        highlights = listOf(
+                            "100 New Chemical Reactions: Expanded from 105 to 205+ reactions (rxn_106 through rxn_205) ready to simulate.",
+                            "95+ New Compounds in MoreExtendedChemicals.kt with complete physical and hazard properties.",
+                            "Reactions across Organic Synthesis, Thermite, Coordination Chemistry, and Electrochemistry.",
+                            "Full 1-click loading into workbench reaction vessel."
+                        ),
+                        isLatest = true
+                    )
+
                     // v1.2.0
                     ChangelogCard(
-                        version = "v1.2.0 (Current)",
+                        version = "v1.2.0",
                         date = "2026-09-29",
                         highlights = listOf(
                             "Full 105 Reactions Engine: All reactions compiled into AllReactionsCatalog.kt and actively simulated.",
@@ -709,7 +727,7 @@ fun SettingsScreen(
                             "Simulation Readiness: Compound schema with isSimulatable parameter validation.",
                             "Automated GitHub Actions workflow for README changelog updating."
                         ),
-                        isLatest = true
+                        isLatest = false
                     )
 
                     // v1.1.0

@@ -22,7 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Thermostat
@@ -327,7 +327,7 @@ fun ToolsScreen(
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     )
                 ) {
-                    Icon(imageVector = Icons.Default.ArrowForward, contentDescription = "Equip")
+                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Equip")
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "Equip in Lab Workbench",

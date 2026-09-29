@@ -565,8 +565,8 @@ object ChemicalCatalog {
         )
     )
 
-    // ALL 118 ELEMENTS + BASE COMPOUNDS + EXTENDED REACTION COMPOUNDS
-    val ALL_CHEMICALS: List<Chemical> = PeriodicTableData.ALL_118_ELEMENTS + BASE_COMPOUNDS + ExtendedChemicals.ALL_EXTENDED_COMPOUNDS
+    // ALL 118 ELEMENTS + BASE COMPOUNDS + EXTENDED REACTION COMPOUNDS + 100 NEW REACTION COMPOUNDS
+    val ALL_CHEMICALS: List<Chemical> = PeriodicTableData.ALL_118_ELEMENTS + BASE_COMPOUNDS + ExtendedChemicals.ALL_EXTENDED_COMPOUNDS + MoreExtendedChemicals.ALL_MORE_EXTENDED_COMPOUNDS
 
     val REACTIONS: List<Reaction> = listOf(
         // 1. Water Boiling to Steam
@@ -999,7 +999,7 @@ object ChemicalCatalog {
             resultingColor = 0xEEF8FAFC,
             observation = "Thermal decomposition in crucible releases brisk vigorous streams of pure oxygen gas, leaving neutral KCl."
         )
-    ) + AllReactionsCatalog.ALL_105_REACTIONS
+    ) + AllReactionsCatalog.ALL_105_REACTIONS + ReactionsCatalog106To155.REACTIONS_106_TO_155 + ReactionsCatalog156To205.REACTIONS_156_TO_205
 
     fun normalizeReactant(id: String): String = when (id) {
         "H2" -> "H"

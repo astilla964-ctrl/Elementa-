@@ -109,4 +109,63 @@ class ChemistryEngineTest {
         // Exothermic heat released
         assertTrue(state.averageTemperature > 100.0)
     }
+
+    @Test
+    fun `reactions catalog contains over 230 verified reactions including 100 new reactions`() {
+        val reactions = ChemicalCatalog.REACTIONS
+        // 33 base + 105 catalog + 100 newly added = 238
+        assertTrue("Expected at least 235 reactions, found ${reactions.size}", reactions.size >= 235)
+
+        // Verify key newly generated reactions from rxn_106 to rxn_205 exist
+        val volcano = reactions.find { it.id == "rxn_106" }
+        assertNotNull("Expected Ammonium Dichromate Volcano rxn_106", volcano)
+
+        val prussianBlue = reactions.find { it.id == "rxn_108" }
+        assertNotNull("Expected Prussian Blue rxn_108", prussianBlue)
+
+        val thermite = reactions.find { it.id == "rxn_165" }
+        assertNotNull("Expected Thermite rxn_165", thermite)
+
+        val chlorAlkali = reactions.find { it.id == "rxn_197" }
+        assertNotNull("Expected Chlor-Alkali Electrolysis rxn_197", chlorAlkali)
+
+        val limewater = reactions.find { it.id == "rxn_201" }
+        assertNotNull("Expected Limewater rxn_201", limewater)
+
+        val lastNew = reactions.find { it.id == "rxn_205" }
+        assertNotNull("Expected rxn_205", lastNew)
+
+        // Verify all reactant and product IDs resolve in ChemicalCatalog
+        for (rx in reactions) {
+            for (rId in rx.reactantIds) {
+                assertNotNull("Reactant '$rId' in reaction '${rx.id}' could not be resolved", ChemicalCatalog.getChemical(rId))
+            }
+            for (pId in rx.productIds) {
+                assertNotNull("Product '$pId' in reaction '${rx.id}' could not be resolved", ChemicalCatalog.getChemical(pId))
+            }
+        }
+    }
+
+    @Test
+    fun `simulate new reaction - prussian blue precipitation`() {
+        engine.clear()
+        val fecl3 = ChemicalCatalog.getChemical("FeCl3")!!
+        val k4fe = ChemicalCatalog.getChemical("K4[Fe(CN)6]")!!
+
+        engine.spawnElement(fecl3)
+        engine.spawnElement(k4fe)
+
+        val interactions = engine.detectPotentialInteractions()
+        val pbRx = interactions.find { it.reaction.id == "rxn_108" }
+        assertNotNull("Expected Prussian Blue reaction detected", pbRx)
+        assertTrue(pbRx!!.isActivationEnergyMet)
+
+        val executed = engine.executeBestInteraction()
+        assertNotNull(executed)
+        assertEquals("rxn_108", executed!!.reaction.id)
+
+        val state = engine.engineState.value
+        assertTrue(state.particles.any { it.chemical.id == "Fe4[Fe(CN)6]3" })
+    }
 }
+
