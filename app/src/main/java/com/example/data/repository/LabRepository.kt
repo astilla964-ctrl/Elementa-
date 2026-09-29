@@ -4,9 +4,12 @@ import com.example.data.db.DiscoveredCompoundEntity
 import com.example.data.db.LabDao
 import com.example.data.db.ReactionLogEntity
 import com.example.data.model.ChemicalCatalog
+import com.example.data.model.Compound
 import com.example.data.model.Reaction
+import com.example.data.model.toCompound
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -17,6 +20,13 @@ class LabRepository(private val labDao: LabDao) {
 
     val discoveredEntities: Flow<List<DiscoveredCompoundEntity>> = labDao.getAllDiscovered()
     val reactionLogs: Flow<List<ReactionLogEntity>> = labDao.getReactionLogs()
+
+    val compounds: Flow<List<Compound>> = discoveredEntities.map { entities ->
+        val discoveredIds = entities.map { it.id }.toSet()
+        ChemicalCatalog.ALL_CHEMICALS.map { chem ->
+            chem.toCompound(discovered = chem.id in discoveredIds || chem.isPreUnlocked)
+        }
+    }
 
     private val httpClient = OkHttpClient.Builder()
         .connectTimeout(5, TimeUnit.SECONDS)

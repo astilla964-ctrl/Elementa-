@@ -1,6 +1,6 @@
 [
   {
-    "id": "rxn_008",
+    "id": "rxn_006",
     "name": "Combustion Synthesis of Magnesium Oxide",
     "category": "Synthesis",
     "reactants": [
@@ -28,7 +28,7 @@
     }
   },
   {
-    "id": "rxn_009",
+    "id": "rxn_007",
     "name": "Synthesis of Sodium Chloride",
     "category": "Synthesis",
     "reactants": [
@@ -56,7 +56,7 @@
     }
   },
   {
-    "id": "rxn_010",
+    "id": "rxn_008",
     "name": "Haber-Bosch Ammonia Synthesis",
     "category": "Synthesis",
     "reactants": [
@@ -83,7 +83,7 @@
     }
   },
   {
-    "id": "rxn_011",
+    "id": "rxn_009",
     "name": "Synthesis of Iron(II) Sulfide",
     "category": "Synthesis",
     "reactants": [
@@ -111,7 +111,7 @@
     }
   },
   {
-    "id": "rxn_012",
+    "id": "rxn_010",
     "name": "Hydration Synthesis of Calcium Hydroxide (Slaking of Lime)",
     "category": "Synthesis",
     "reactants": [
@@ -139,7 +139,7 @@
     }
   },
   {
-    "id": "rxn_013",
+    "id": "rxn_011",
     "name": "Synthesis of Carbonic Acid",
     "category": "Synthesis",
     "reactants": [
@@ -166,7 +166,7 @@
     }
   },
   {
-    "id": "rxn_014",
+    "id": "rxn_012",
     "name": "Synthesis of Sulfur Dioxide",
     "category": "Synthesis",
     "reactants": [
@@ -194,7 +194,7 @@
     }
   },
   {
-    "id": "rxn_015",
+    "id": "rxn_013",
     "name": "Synthesis of Sulfur Trioxide (Contact Process)",
     "category": "Synthesis",
     "reactants": [
@@ -221,7 +221,7 @@
     }
   },
   {
-    "id": "rxn_016",
+    "id": "rxn_014",
     "name": "Synthesis of Copper(II) Oxide",
     "category": "Synthesis",
     "reactants": [
@@ -249,7 +249,7 @@
     }
   },
   {
-    "id": "rxn_017",
+    "id": "rxn_015",
     "name": "Synthesis of Hydrogen Chloride Gas",
     "category": "Synthesis",
     "reactants": [
@@ -276,7 +276,7 @@
     }
   },
   {
-    "id": "rxn_018",
+    "id": "rxn_016",
     "name": "Synthesis of Aluminum Oxide",
     "category": "Synthesis",
     "reactants": [
@@ -304,7 +304,7 @@
     }
   },
   {
-    "id": "rxn_019",
+    "id": "rxn_017",
     "name": "Synthesis of Phosphorus Pentoxide",
     "category": "Synthesis",
     "reactants": [
@@ -332,7 +332,7 @@
     }
   },
   {
-    "id": "rxn_020",
+    "id": "rxn_018",
     "name": "Synthesis of Calcium Oxide (Calcium Burning)",
     "category": "Synthesis",
     "reactants": [
@@ -360,7 +360,7 @@
     }
   },
   {
-    "id": "rxn_021",
+    "id": "rxn_019",
     "name": "Synthesis of Potassium Chloride",
     "category": "Synthesis",
     "reactants": [
@@ -388,7 +388,7 @@
     }
   },
   {
-    "id": "rxn_022",
+    "id": "rxn_020",
     "name": "Synthesis of Aluminum Chloride",
     "category": "Synthesis",
     "reactants": [
@@ -416,7 +416,7 @@
     }
   },
   {
-    "id": "rxn_023",
+    "id": "rxn_021",
     "name": "Catalytic Decomposition of Hydrogen Peroxide",
     "category": "Decomposition",
     "reactants": [
@@ -444,7 +444,7 @@
     }
   },
   {
-    "id": "rxn_024",
+    "id": "rxn_022",
     "name": "Thermal Decomposition of Potassium Chlorate",
     "category": "Decomposition",
     "reactants": [
@@ -472,7 +472,7 @@
     }
   },
   {
-    "id": "rxn_025",
+    "id": "rxn_023",
     "name": "Thermal Decomposition of Sodium Bicarbonate (Baking Soda)",
     "category": "Decomposition",
     "reactants": [
@@ -501,7 +501,7 @@
     }
   },
   {
-    "id": "rxn_026",
+    "id": "rxn_024",
     "name": "Thermal Decomposition of Copper(II) Carbonate",
     "category": "Decomposition",
     "reactants": [
@@ -530,7 +530,7 @@
     }
   },
   {
-    "id": "rxn_027",
+    "id": "rxn_025",
     "name": "Thermal Decomposition of Copper(II) Hydroxide",
     "category": "Decomposition",
     "reactants": [
@@ -558,7 +558,7 @@
     }
   },
   {
-    "id": "rxn_028",
+    "id": "rxn_026",
     "name": "Thermal Decomposition of Lead(II) Nitrate",
     "category": "Decomposition",
     "reactants": [
@@ -588,7 +588,7 @@
     }
   },
   {
-    "id": "rxn_029",
+    "id": "rxn_027",
     "name": "Thermal Decomposition of Ammonium Nitrate",
     "category": "Decomposition",
     "reactants": [
@@ -616,7 +616,7 @@
     }
   },
   {
-    "id": "rxn_030",
+    "id": "rxn_028",
     "name": "Thermal Decomposition of Iron(II) Sulfate Crystals",
     "category": "Decomposition",
     "reactants": [
@@ -645,7 +645,7 @@
     }
   },
   {
-    "id": "rxn_031",
+    "id": "rxn_029",
     "name": "Thermal Decomposition of Zinc Carbonate",
     "category": "Decomposition",
     "reactants": [
@@ -673,7 +673,7 @@
     }
   },
   {
-    "id": "rxn_032",
+    "id": "rxn_030",
     "name": "Photochemical Decomposition of Silver Chloride",
     "category": "Decomposition",
     "reactants": [
@@ -701,7 +701,7 @@
     }
   },
   {
-    "id": "rxn_033",
+    "id": "rxn_031",
     "name": "Photochemical Decomposition of Silver Bromide",
     "category": "Decomposition",
     "reactants": [
@@ -728,7 +728,7 @@
     }
   },
   {
-    "id": "rxn_034",
+    "id": "rxn_032",
     "name": "Electrolytic Decomposition of Molten Sodium Chloride",
     "category": "Decomposition",
     "reactants": [
@@ -756,7 +756,7 @@
     }
   },
   {
-    "id": "rxn_035",
+    "id": "rxn_033",
     "name": "Thermal Decomposition of Mercury(II) Oxide (Priestley Oxygen Prep)",
     "category": "Decomposition",
     "reactants": [
@@ -784,7 +784,7 @@
     }
   },
   {
-    "id": "rxn_036",
+    "id": "rxn_034",
     "name": "Thermal Decomposition of Magnesium Hydroxide",
     "category": "Decomposition",
     "reactants": [
@@ -812,7 +812,7 @@
     }
   },
   {
-    "id": "rxn_037",
+    "id": "rxn_035",
     "name": "Thermal Decomposition of Potassium Nitrate",
     "category": "Decomposition",
     "reactants": [
@@ -840,7 +840,7 @@
     }
   },
   {
-    "id": "rxn_038",
+    "id": "rxn_036",
     "name": "Displacement of Copper by Iron (Iron in Copper Sulfate)",
     "category": "Single Displacement",
     "reactants": [
@@ -869,7 +869,7 @@
     }
   },
   {
-    "id": "rxn_039",
+    "id": "rxn_037",
     "name": "Displacement of Silver by Copper (Silver Crystal Tree)",
     "category": "Single Displacement",
     "reactants": [
@@ -898,7 +898,7 @@
     }
   },
   {
-    "id": "rxn_040",
+    "id": "rxn_038",
     "name": "Alkali Reaction of Sodium with Water",
     "category": "Single Displacement",
     "reactants": [
@@ -927,7 +927,7 @@
     }
   },
   {
-    "id": "rxn_041",
+    "id": "rxn_039",
     "name": "Alkali Reaction of Potassium with Water",
     "category": "Single Displacement",
     "reactants": [
@@ -956,7 +956,7 @@
     }
   },
   {
-    "id": "rxn_042",
+    "id": "rxn_040",
     "name": "Displacement of Hydrogen by Magnesium in Hydrochloric Acid",
     "category": "Single Displacement",
     "reactants": [
@@ -985,7 +985,7 @@
     }
   },
   {
-    "id": "rxn_043",
+    "id": "rxn_041",
     "name": "Displacement of Hydrogen by Aluminum in Hydrochloric Acid",
     "category": "Single Displacement",
     "reactants": [
@@ -1014,7 +1014,7 @@
     }
   },
   {
-    "id": "rxn_044",
+    "id": "rxn_042",
     "name": "Halogen Displacement of Bromine by Chlorine",
     "category": "Single Displacement",
     "reactants": [
@@ -1043,7 +1043,7 @@
     }
   },
   {
-    "id": "rxn_045",
+    "id": "rxn_043",
     "name": "Halogen Displacement of Iodine by Chlorine",
     "category": "Single Displacement",
     "reactants": [
@@ -1072,7 +1072,7 @@
     }
   },
   {
-    "id": "rxn_046",
+    "id": "rxn_044",
     "name": "Halogen Displacement of Iodine by Bromine",
     "category": "Single Displacement",
     "reactants": [
@@ -1100,7 +1100,7 @@
     }
   },
   {
-    "id": "rxn_047",
+    "id": "rxn_045",
     "name": "Displacement of Copper by Zinc (Zinc in Copper Sulfate)",
     "category": "Single Displacement",
     "reactants": [
@@ -1128,7 +1128,7 @@
     }
   },
   {
-    "id": "rxn_048",
+    "id": "rxn_046",
     "name": "Displacement of Hydrogen by Calcium in Water",
     "category": "Single Displacement",
     "reactants": [
@@ -1158,7 +1158,7 @@
     }
   },
   {
-    "id": "rxn_049",
+    "id": "rxn_047",
     "name": "Displacement of Lead by Zinc",
     "category": "Single Displacement",
     "reactants": [
@@ -1186,7 +1186,7 @@
     }
   },
   {
-    "id": "rxn_050",
+    "id": "rxn_048",
     "name": "Displacement of Hydrogen by Iron in Sulfuric Acid",
     "category": "Single Displacement",
     "reactants": [
@@ -1214,7 +1214,7 @@
     }
   },
   {
-    "id": "rxn_051",
+    "id": "rxn_049",
     "name": "Displacement of Silver by Zinc",
     "category": "Single Displacement",
     "reactants": [
@@ -1243,7 +1243,7 @@
     }
   },
   {
-    "id": "rxn_052",
+    "id": "rxn_050",
     "name": "Displacement of Hydrogen from Steam by Hot Magnesium",
     "category": "Single Displacement",
     "reactants": [
@@ -1273,7 +1273,7 @@
     }
   },
   {
-    "id": "rxn_053",
+    "id": "rxn_051",
     "name": "Displacement of Tin by Zinc",
     "category": "Single Displacement",
     "reactants": [
@@ -1301,7 +1301,7 @@
     }
   },
   {
-    "id": "rxn_054",
+    "id": "rxn_052",
     "name": "Displacement of Nickel by Iron",
     "category": "Single Displacement",
     "reactants": [
@@ -1329,7 +1329,7 @@
     }
   },
   {
-    "id": "rxn_055",
+    "id": "rxn_053",
     "name": "Displacement of Lead by Magnesium",
     "category": "Single Displacement",
     "reactants": [
@@ -1357,7 +1357,7 @@
     }
   },
   {
-    "id": "rxn_056",
+    "id": "rxn_054",
     "name": "Golden Rain Precipitation (Lead(II) Iodide)",
     "category": "Double Displacement",
     "reactants": [
@@ -1386,7 +1386,7 @@
     }
   },
   {
-    "id": "rxn_057",
+    "id": "rxn_055",
     "name": "Precipitation of Barium Sulfate (Sulfate Test)",
     "category": "Double Displacement",
     "reactants": [
@@ -1414,7 +1414,7 @@
     }
   },
   {
-    "id": "rxn_058",
+    "id": "rxn_056",
     "name": "Precipitation of Copper(II) Hydroxide",
     "category": "Double Displacement",
     "reactants": [
@@ -1443,7 +1443,7 @@
     }
   },
   {
-    "id": "rxn_059",
+    "id": "rxn_057",
     "name": "Precipitation of Iron(III) Hydroxide (Rust Flocculent)",
     "category": "Double Displacement",
     "reactants": [
@@ -1471,7 +1471,7 @@
     }
   },
   {
-    "id": "rxn_060",
+    "id": "rxn_058",
     "name": "Precipitation of Iron(II) Hydroxide",
     "category": "Double Displacement",
     "reactants": [
@@ -1500,7 +1500,7 @@
     }
   },
   {
-    "id": "rxn_061",
+    "id": "rxn_059",
     "name": "Precipitation of Calcium Carbonate (Limewater CO2 Test)",
     "category": "Double Displacement",
     "reactants": [
@@ -1528,7 +1528,7 @@
     }
   },
   {
-    "id": "rxn_062",
+    "id": "rxn_060",
     "name": "Precipitation of Silver Bromide",
     "category": "Double Displacement",
     "reactants": [
@@ -1557,7 +1557,7 @@
     }
   },
   {
-    "id": "rxn_063",
+    "id": "rxn_061",
     "name": "Precipitation of Silver Iodide",
     "category": "Double Displacement",
     "reactants": [
@@ -1585,7 +1585,7 @@
     }
   },
   {
-    "id": "rxn_064",
+    "id": "rxn_062",
     "name": "Precipitation of Lead(II) Sulfate",
     "category": "Double Displacement",
     "reactants": [
@@ -1613,7 +1613,7 @@
     }
   },
   {
-    "id": "rxn_065",
+    "id": "rxn_063",
     "name": "Precipitation of Calcium Sulfate (Gypsum Slurry)",
     "category": "Double Displacement",
     "reactants": [
@@ -1641,7 +1641,7 @@
     }
   },
   {
-    "id": "rxn_066",
+    "id": "rxn_064",
     "name": "Precipitation of Barium Carbonate",
     "category": "Double Displacement",
     "reactants": [
@@ -1669,7 +1669,7 @@
     }
   },
   {
-    "id": "rxn_067",
+    "id": "rxn_065",
     "name": "Precipitation of Nickel(II) Hydroxide",
     "category": "Double Displacement",
     "reactants": [
@@ -1697,7 +1697,7 @@
     }
   },
   {
-    "id": "rxn_068",
+    "id": "rxn_066",
     "name": "Precipitation of Cobalt(II) Hydroxide",
     "category": "Double Displacement",
     "reactants": [
@@ -1725,7 +1725,7 @@
     }
   },
   {
-    "id": "rxn_069",
+    "id": "rxn_067",
     "name": "Precipitation of Zinc Hydroxide",
     "category": "Double Displacement",
     "reactants": [
@@ -1753,7 +1753,7 @@
     }
   },
   {
-    "id": "rxn_070",
+    "id": "rxn_068",
     "name": "Precipitation of Aluminum Hydroxide",
     "category": "Double Displacement",
     "reactants": [
@@ -1782,7 +1782,7 @@
     }
   },
   {
-    "id": "rxn_071",
+    "id": "rxn_069",
     "name": "Effervescence of Marble with Hydrochloric Acid",
     "category": "Double Displacement",
     "reactants": [
@@ -1812,7 +1812,7 @@
     }
   },
   {
-    "id": "rxn_072",
+    "id": "rxn_070",
     "name": "Precipitation of Lead(II) Chromate (Chrome Yellow)",
     "category": "Double Displacement",
     "reactants": [
@@ -1840,7 +1840,7 @@
     }
   },
   {
-    "id": "rxn_073",
+    "id": "rxn_071",
     "name": "Precipitation of Silver Carbonate",
     "category": "Double Displacement",
     "reactants": [
@@ -1868,7 +1868,7 @@
     }
   },
   {
-    "id": "rxn_074",
+    "id": "rxn_072",
     "name": "Precipitation of Copper(II) Carbonate (Basic)",
     "category": "Double Displacement",
     "reactants": [
@@ -1896,7 +1896,7 @@
     }
   },
   {
-    "id": "rxn_075",
+    "id": "rxn_073",
     "name": "Precipitation of Manganese(II) Hydroxide",
     "category": "Double Displacement",
     "reactants": [
@@ -1924,7 +1924,7 @@
     }
   },
   {
-    "id": "rxn_076",
+    "id": "rxn_074",
     "name": "Neutralization of Sulfuric Acid with Sodium Hydroxide",
     "category": "Neutralization",
     "reactants": [
@@ -1953,7 +1953,7 @@
     }
   },
   {
-    "id": "rxn_077",
+    "id": "rxn_075",
     "name": "Neutralization of Nitric Acid with Potassium Hydroxide",
     "category": "Neutralization",
     "reactants": [
@@ -1982,7 +1982,7 @@
     }
   },
   {
-    "id": "rxn_078",
+    "id": "rxn_076",
     "name": "Neutralization of Hydrochloric Acid with Potassium Hydroxide",
     "category": "Neutralization",
     "reactants": [
@@ -2011,7 +2011,7 @@
     }
   },
   {
-    "id": "rxn_079",
+    "id": "rxn_077",
     "name": "Neutralization of Acetic Acid with Sodium Hydroxide",
     "category": "Neutralization",
     "reactants": [
@@ -2040,7 +2040,7 @@
     }
   },
   {
-    "id": "rxn_080",
+    "id": "rxn_078",
     "name": "Neutralization of Hydrochloric Acid with Ammonia Solution",
     "category": "Neutralization",
     "reactants": [
@@ -2068,7 +2068,7 @@
     }
   },
   {
-    "id": "rxn_081",
+    "id": "rxn_079",
     "name": "Neutralization of Gastric Acid by Milk of Magnesia",
     "category": "Neutralization",
     "reactants": [
@@ -2097,7 +2097,7 @@
     }
   },
   {
-    "id": "rxn_082",
+    "id": "rxn_080",
     "name": "Neutralization of Sulfuric Acid with Copper(II) Oxide",
     "category": "Neutralization",
     "reactants": [
@@ -2126,7 +2126,7 @@
     }
   },
   {
-    "id": "rxn_083",
+    "id": "rxn_081",
     "name": "Neutralization of Hydrochloric Acid with Iron(III) Oxide",
     "category": "Neutralization",
     "reactants": [
@@ -2155,7 +2155,7 @@
     }
   },
   {
-    "id": "rxn_084",
+    "id": "rxn_082",
     "name": "Neutralization of Phosphoric Acid with Sodium Hydroxide",
     "category": "Neutralization",
     "reactants": [
@@ -2183,7 +2183,7 @@
     }
   },
   {
-    "id": "rxn_085",
+    "id": "rxn_083",
     "name": "Neutralization of Nitric Acid with Calcium Carbonate",
     "category": "Neutralization",
     "reactants": [
@@ -2213,7 +2213,7 @@
     }
   },
   {
-    "id": "rxn_086",
+    "id": "rxn_084",
     "name": "Neutralization of Sulfuric Acid with Ammonia Solution",
     "category": "Neutralization",
     "reactants": [
@@ -2240,7 +2240,7 @@
     }
   },
   {
-    "id": "rxn_087",
+    "id": "rxn_085",
     "name": "Neutralization of Hydrochloric Acid with Calcium Hydroxide (Limewater)",
     "category": "Neutralization",
     "reactants": [
@@ -2268,7 +2268,7 @@
     }
   },
   {
-    "id": "rxn_088",
+    "id": "rxn_086",
     "name": "Classic Thermite Reaction",
     "category": "Redox",
     "reactants": [
@@ -2298,7 +2298,7 @@
     }
   },
   {
-    "id": "rxn_089",
+    "id": "rxn_087",
     "name": "Reduction of Copper(II) Oxide by Hydrogen",
     "category": "Redox",
     "reactants": [
@@ -2327,7 +2327,7 @@
     }
   },
   {
-    "id": "rxn_090",
+    "id": "rxn_088",
     "name": "Reduction of Copper(II) Oxide by Carbon Monoxide",
     "category": "Redox",
     "reactants": [
@@ -2356,7 +2356,7 @@
     }
   },
   {
-    "id": "rxn_091",
+    "id": "rxn_089",
     "name": "Blast Furnace Reduction of Iron(III) Oxide by Carbon Monoxide",
     "category": "Redox",
     "reactants": [
@@ -2384,7 +2384,7 @@
     }
   },
   {
-    "id": "rxn_092",
+    "id": "rxn_090",
     "name": "Reduction of Lead(II) Oxide by Charcoal",
     "category": "Redox",
     "reactants": [
@@ -2413,7 +2413,7 @@
     }
   },
   {
-    "id": "rxn_093",
+    "id": "rxn_091",
     "name": "Reaction of Copper with Concentrated Nitric Acid",
     "category": "Redox",
     "reactants": [
@@ -2443,7 +2443,7 @@
     }
   },
   {
-    "id": "rxn_094",
+    "id": "rxn_092",
     "name": "Reaction of Copper with Dilute Nitric Acid",
     "category": "Redox",
     "reactants": [
@@ -2473,40 +2473,39 @@
     }
   },
   {
-    "id": "rxn_095",
-    "name": "Tollens Silver Mirror Reaction",
+    "id": "rxn_093",
+    "name": "Redox Oxidation of Iron(II) by Potassium Permanganate",
     "category": "Redox",
     "reactants": [
-      "AgNO3",
-      "NH3",
-      "HCHO",
-      "NaOH"
+      "KMnO4",
+      "FeSO4",
+      "H2SO4"
     ],
     "products": [
-      "Ag",
-      "HCOONa",
-      "NH4NO3",
+      "MnSO4",
+      "Fe2(SO4)3",
+      "K2SO4",
       "H2O"
     ],
-    "balanced_equation": "2[Ag(NH3)2]+ + HCHO + 3OH- -> 2Ag + HCOO- + 4NH3 + 2H2O",
+    "balanced_equation": "2KMnO4 + 10FeSO4 + 8H2SO4 -> 2MnSO4 + 5Fe2(SO4)3 + K2SO4 + 8H2O",
     "conditions": {
-      "heat_required": true,
-      "min_temp_celsius": 50,
+      "heat_required": false,
+      "min_temp_celsius": 25,
       "catalyst": null,
       "tools_required": [
-        "Water Bath",
-        "Pristine Clean Test Tube"
+        "Buret",
+        "Erlenmeyer Flask"
       ]
     },
     "visual_effects": {
-      "color_change": "Clear Liquid Deposits Glistening Metallic Mirror Coating on Glass",
+      "color_change": "Deep Purple Permanganate Discharges to Pale Amber-Yellow",
       "gas_emission": null,
       "flame_color": null,
-      "precipitate": true
+      "precipitate": false
     }
   },
   {
-    "id": "rxn_096",
+    "id": "rxn_094",
     "name": "Oxidation of Sulfur Dioxide by Hydrogen Peroxide",
     "category": "Redox",
     "reactants": [
@@ -2533,7 +2532,7 @@
     }
   },
   {
-    "id": "rxn_097",
+    "id": "rxn_095",
     "name": "Reaction of Zinc with Concentrated Sulfuric Acid",
     "category": "Redox",
     "reactants": [
@@ -2563,7 +2562,7 @@
     }
   },
   {
-    "id": "rxn_098",
+    "id": "rxn_096",
     "name": "Combustion of Propane (LP Gas Burner)",
     "category": "Combustion",
     "reactants": [
@@ -2591,7 +2590,7 @@
     }
   },
   {
-    "id": "rxn_099",
+    "id": "rxn_097",
     "name": "Combustion of Ethanol (Spirit Burner)",
     "category": "Combustion",
     "reactants": [
@@ -2619,7 +2618,7 @@
     }
   },
   {
-    "id": "rxn_100",
+    "id": "rxn_098",
     "name": "Combustion of Methanol",
     "category": "Combustion",
     "reactants": [
@@ -2648,7 +2647,7 @@
     }
   },
   {
-    "id": "rxn_101",
+    "id": "rxn_099",
     "name": "Combustion of Butane",
     "category": "Combustion",
     "reactants": [
@@ -2676,7 +2675,7 @@
     }
   },
   {
-    "id": "rxn_102",
+    "id": "rxn_100",
     "name": "Combustion of Acetylene (Oxy-Acetylene Torch)",
     "category": "Combustion",
     "reactants": [
@@ -2704,7 +2703,7 @@
     }
   },
   {
-    "id": "rxn_103",
+    "id": "rxn_101",
     "name": "Combustion of Cellular Glucose (Aerobic Respiration Chemistry)",
     "category": "Combustion",
     "reactants": [
@@ -2733,7 +2732,7 @@
     }
   },
   {
-    "id": "rxn_104",
+    "id": "rxn_102",
     "name": "Combustion of Carbon (Charcoal)",
     "category": "Combustion",
     "reactants": [
@@ -2761,7 +2760,7 @@
     }
   },
   {
-    "id": "rxn_105",
+    "id": "rxn_103",
     "name": "Combustion of Carbon Monoxide",
     "category": "Combustion",
     "reactants": [
@@ -2788,7 +2787,7 @@
     }
   },
   {
-    "id": "rxn_106",
+    "id": "rxn_104",
     "name": "Incomplete Combustion of Methane (Soot Formation)",
     "category": "Combustion",
     "reactants": [
@@ -2817,7 +2816,7 @@
     }
   },
   {
-    "id": "rxn_107",
+    "id": "rxn_105",
     "name": "Combustion of Wax (Octacosane Hydrocarbon)",
     "category": "Combustion",
     "reactants": [

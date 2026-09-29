@@ -65,6 +65,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.Chemical
 import com.example.data.model.ChemicalCatalog
 import com.example.data.model.ChemicalCategory
+import com.example.data.model.Compound
+import com.example.data.model.StateAtSTP
+import com.example.data.model.toCompound
 import com.example.ui.AppScreen
 import com.example.ui.MainViewModel
 
@@ -477,6 +480,8 @@ private fun ChemicalDossierDialog(
     onDismiss: () -> Unit,
     onPourIntoWorkbench: () -> Unit
 ) {
+    val compound = remember(chemical) { chemical.toCompound(discovered = true) }
+
     Dialog(onDismissRequest = onDismiss) {
         Card(
             modifier = Modifier
@@ -537,6 +542,43 @@ private fun ChemicalDossierDialog(
                     }
                 }
 
+                // Simulation Readiness Badge
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = if (compound.isSimulatable) Color(0xFF10B981).copy(alpha = 0.15f) else Color(0xFFF59E0B).copy(alpha = 0.15f),
+                    border = androidx.compose.foundation.BorderStroke(
+                        1.dp,
+                        if (compound.isSimulatable) Color(0xFF10B981).copy(alpha = 0.6f) else Color(0xFFF59E0B).copy(alpha = 0.6f)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 10.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(text = if (compound.isSimulatable) "🟢" else "⚠️", fontSize = 12.sp)
+                            Text(
+                                text = if (compound.isSimulatable) "Simulation Ready (2D Physics)" else "Incomplete Physical Params",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = if (compound.isSimulatable) Color(0xFF10B981) else Color(0xFFF59E0B)
+                            )
+                        }
+                        Text(
+                            text = "Render: ${compound.visualAssets.svgParticleType.value}",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontFamily = FontFamily.Monospace,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
                 // Description
                 Text(
                     text = chemical.description,
@@ -559,10 +601,19 @@ private fun ChemicalDossierDialog(
                             DossierRow("Periodic Group & Period", "Group ${chemical.group ?: "-"}, Period ${chemical.period ?: "-"}")
                             DossierRow("Element Family", chemical.elementSeries ?: "Element")
                         }
-                        DossierRow("Molar Mass / Weight", "${chemical.molarMass} g/mol")
+                        DossierRow("Molar Mass", "${compound.properties.molarMass} g/mol")
+                        DossierRow("State at STP", compound.properties.stateAtSTP.value.replaceFirstChar { it.uppercase() })
+                        DossierRow(
+                            "Density (STP)",
+                            "${compound.properties.density} ${if (compound.properties.stateAtSTP == StateAtSTP.GAS) "g/L" else "g/cm³"}"
+                        )
+                        DossierRow("Boiling / Melting Point", "${compound.properties.boilingPointC}°C / ${compound.properties.meltingPointC}°C")
+                        if (compound.properties.viscosity != null) {
+                            DossierRow("Viscosity", "${compound.properties.viscosity} mPa·s")
+                        }
                         DossierRow("Classification", chemical.category.displayName)
-                        DossierRow("Physical State", chemical.physicalState)
                         DossierRow("Reference pH", String.format("%.1f", chemical.ph))
+                        DossierRow("Canvas Color Hex", compound.properties.colorHex)
                     }
                 }
 

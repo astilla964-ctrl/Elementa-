@@ -60,6 +60,7 @@ class ChemistryEngine(
         isHeating = heating
         isElectricityActive = electricity
         isCentrifuging = centrifuging
+        particles.forEach { it.localizedTemp = temperature }
         recalculateState()
     }
 
@@ -324,6 +325,7 @@ class ChemistryEngine(
 
         // 3. Thermodynamic energy release
         systemTemperature = (systemTemperature + rx.tempChange).coerceIn(-10.0, 1500.0)
+        particles.forEach { it.localizedTemp = systemTemperature }
 
         recalculateState()
         return ready

@@ -11,8 +11,10 @@ import com.example.data.db.ReactionLogEntity
 import com.example.data.model.Chemical
 import com.example.data.model.ChemicalCatalog
 import com.example.data.model.ChemicalCategory
+import com.example.data.model.Compound
 import com.example.data.model.LabToolType
 import com.example.data.model.Reaction
+import com.example.data.model.toCompound
 import com.example.data.repository.LabRepository
 import com.example.engine.ChemistryEngine
 import com.example.engine.model.ChemistryEngineState
@@ -226,6 +228,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
+        )
+
+    val compounds: StateFlow<List<Compound>> =
+        repository.compounds.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = ChemicalCatalog.ALL_CHEMICALS.map { it.toCompound(discovered = it.isPreUnlocked) }
         )
 
     val reactionLogs: StateFlow<List<ReactionLogEntity>> =
