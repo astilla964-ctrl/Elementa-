@@ -856,6 +856,23 @@ object ReactionsCatalog156To205 {
             resultingPh = 7.8,
             resultingColor = 0xFFFEF08AL,
             observation = "Silver Carbonate Separation: Clear solutions combine to produce a delicate, light-sensitive pale-yellow precipitate of silver carbonate."
+        ),
+        // rxn_206
+        Reaction(
+            id = "rxn_206",
+            reactantIds = setOf("Li", "H2O"),
+            productIds = listOf("LiOH", "H2"),
+            equation = "2Li(s) + 2H2O(1) → 2LiOH(aq) + H2(g)",
+            requiredTool = null,
+            minTemp = 5.0,
+            maxTemp = 2000.0,
+            requiresElectricity = false,
+            requiresCentrifuge = false,
+            isExothermic = true,
+            tempChange = 28.0,
+            resultingPh = 12.5,
+            resultingColor = 0xDD38BDF8L,
+            observation = "Alkali Reaction of Lithium with Water: 2Li(s) + 2H2O(1) → 2LiOH(aq) + H2(g). Solid metallic lithium fizzes and skitters over the water surface, rapidly effervescing flammable hydrogen gas bubbles and yielding strongly alkaline lithium hydroxide solution (pH ~12.5)."
         )
     )
 }

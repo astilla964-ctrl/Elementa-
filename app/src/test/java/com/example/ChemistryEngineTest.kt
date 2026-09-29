@@ -172,6 +172,28 @@ class ChemistryEngineTest {
     }
 
     @Test
+    fun `lithium reacts with water to produce lithium hydroxide and hydrogen`() {
+        val reaction = ChemicalCatalog.REACTIONS.find { it.id == "rxn_206" }
+        assertNotNull("Expected reaction rxn_206 for 2Li(s) + 2H2O(1) -> 2LiOH(aq) + H2(g)", reaction)
+        assertEquals("2Li(s) + 2H2O(1) → 2LiOH(aq) + H2(g)", reaction?.equation)
+        assertTrue(reaction!!.reactantIds.contains("Li"))
+        assertTrue(reaction.reactantIds.contains("H2O"))
+        assertTrue(reaction.productIds.contains("LiOH"))
+        assertTrue(reaction.productIds.contains("H2"))
+
+        // Stoichiometry check
+        val (reactants, products) = StoichiometryEngine.parseCoefficients(
+            reaction.equation,
+            reaction.reactantIds,
+            reaction.productIds
+        )
+        assertEquals(2, reactants["Li"])
+        assertEquals(2, reactants["H2O"])
+        assertEquals(2, products["LiOH"])
+        assertEquals(1, products["H2"])
+    }
+
+    @Test
     fun `quantitative measurement apparatus mole conversions`() {
         val zinc = ChemicalCatalog.getChemical("Zn")!!
         val hcl = ChemicalCatalog.getChemical("HCl")!!
