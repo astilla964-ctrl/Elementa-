@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.ScreenRotation
@@ -39,6 +40,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -61,6 +63,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.data.model.ChangelogRegistry
 import com.example.ui.MainViewModel
 import com.example.ui.OrientationSetting
 import com.example.ui.theme.AppThemeMode
@@ -84,6 +87,7 @@ fun SettingsScreen(
     var showResetDialog by remember { mutableStateOf(false) }
     var showLogsDialog by remember { mutableStateOf(false) }
     var showReadmeChangelogDialog by remember { mutableStateOf(false) }
+    var showChangelogRegistryDialog by remember { mutableStateOf(false) }
 
     fun copyToClipboard(label: String, text: String) {
         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -449,6 +453,18 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.width(6.dp))
                     Text("Read Me & Automatic Changelog", fontWeight = FontWeight.Bold)
                 }
+
+                OutlinedButton(
+                    onClick = { showChangelogRegistryDialog = true },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("view_in_app_changelog_registry_button"),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(imageVector = Icons.Default.ListAlt, contentDescription = "Registry", modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("In-App Changelog Registry (src/data/changelog.ts)", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                }
             }
         }
 
@@ -622,6 +638,13 @@ fun SettingsScreen(
         val fullChangelogText = """
 # Elementa — Automatic Changelog
 
+### [v1.5.0] — 2026-09-30
+- Environmental & Thermodynamics Simulation Engine: Interactive heating (Digital Hot Plate up to 550°C, Bunsen Burner with roaring flame up to 1,500°C) and cryogenic cooling (Ice Water 0°C, Dry Ice -78.5°C, Liquid Nitrogen Dewar -196°C).
+- Gastight Pressure & Sealed System: Gastight rubber stopper with calibrated dial pressure gauge (0 - 100 atm), quick pressure relief valve, vacuum pump (<0.1 atm), and gas compressor.
+- Thermodynamic Physics & Activation Energy: Real-time Activation Energy (Ea) thresholds (Tact), dynamic phase transitions (melting, freezing, boiling, condensation), and exothermic/endothermic enthalpy heat balance.
+- Glassware Safety & Container Hazard Mechanics: Thermal shock cracking (>500°C) and catastrophic overpressurization explosions (PV = nRT > 5.0 atm) with shattered glass visual effects and 1-tap clean up.
+- Visual Thermal States & Telemetry Charting: Incandescent glass glow heat maps, vapor/steam particle effervescence, condensation droplets, floating sensor overlays, and 60-sample live heat curve graph (Temp vs. Time).
+
 ### [v1.4.0] — 2026-09-29
 - Quantitative Chemistry & Stoichiometry Module: Integrated in-lab measurement apparatuses (Analytical Balance & Spatula in grams, Graduated Cylinder & Precision Buret in mL/M, Gastight Gas Syringe at STP in L).
 - Real-Time Stoichiometric Engine: Mass-to-mole conversions, limiting & excess reagent calculations, theoretical yields, and exact unreacted remainder accounting.
@@ -695,7 +718,7 @@ fun SettingsScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text("Current Release:", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
-                                Text("v1.3.0 (Latest)", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                Text("v1.5.0 (Build 4)", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                             }
                             Text(
                                 text = "Automated GitHub workflow syncs this changelog directly to the repository front README.",
@@ -712,9 +735,23 @@ fun SettingsScreen(
                         fontWeight = FontWeight.Bold
                     )
 
+                    // v1.5.0
+                    ChangelogCard(
+                        version = "v1.5.0 (Latest)",
+                        date = "2026-09-30",
+                        highlights = listOf(
+                            "Environmental Apparatuses: Digital Hot Plate (up to 550°C), Bunsen Burner (up to 1,500°C), Ice Bath, Dry Ice, and Cryogenic Liquid N₂ Dewar (-196°C).",
+                            "Stopper & Pressure Gauge: Gastight rubber stopper with calibrated dial pressure gauge (0 - 100 atm), quick relief valve, vacuum pump, and compressor.",
+                            "Thermodynamic Physics & Ea: Activation energy thresholds (Tact), dynamic phase transitions (boiling/condensation/melting), and exothermic/endothermic enthalpy spikes.",
+                            "Glassware Safety & Hazard Engine: Thermal shock stress cracking and catastrophic overpressurization explosion (PV = nRT > 5.0 atm) with shattered glass visual effects and cleanup.",
+                            "Visual Heat Maps & Live Curves: Incandescent glowing glass (>500°C red, >900°C yellow), vapor particle effervescence, and interactive live heat curves (Temp vs. Time)."
+                        ),
+                        isLatest = true
+                    )
+
                     // v1.4.0
                     ChangelogCard(
-                        version = "v1.4.0 (Current)",
+                        version = "v1.4.0",
                         date = "2026-09-29",
                         highlights = listOf(
                             "Quantitative Measurement Apparatuses: Analytical Balance (g), Graduated Cylinder/Buret (mL, M), and Gas Syringe (L STP).",
@@ -723,7 +760,7 @@ fun SettingsScreen(
                             "Gas Off-Gassing: Bubbling animations cease immediately when limiting reagent is exhausted.",
                             "Quantitative Reaction Log Drawer: Live breakdown of inputs, limiting reagent highlight, product yields, and unreacted remainders."
                         ),
-                        isLatest = true
+                        isLatest = false
                     )
 
                     // v1.3.0
@@ -792,6 +829,170 @@ fun SettingsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showReadmeChangelogDialog = false }) {
+                    Text("Close")
+                }
+            }
+        )
+    }
+
+    // In-App Changelog Registry Dialog (src/data/changelog.ts)
+    if (showChangelogRegistryDialog) {
+        AlertDialog(
+            onDismissRequest = { showChangelogRegistryDialog = false },
+            title = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "📋 In-App Changelog Registry",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "src/data/changelog.ts • Build Release Tracker",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontFamily = FontFamily.Monospace,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(420.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    // Header Card
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.secondary.copy(alpha = 0.3f))
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(
+                                text = "Automated Build Versioning Registry",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                            Text(
+                                text = "Maintains build history array mirroring src/data/changelog.ts, coordinated with GitHub Actions release.yml build runner numbers.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+
+                    // Changelog Entries from Registry
+                    ChangelogRegistry.CHANGELOG_HISTORY.forEachIndexed { index, entry ->
+                        val isLatest = index == 0
+                        Surface(
+                            shape = RoundedCornerShape(14.dp),
+                            color = if (isLatest) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            border = if (isLatest) androidx.compose.foundation.BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary) else androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(14.dp),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Text(
+                                            text = entry.version,
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (isLatest) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                        )
+                                        if (isLatest) {
+                                            Surface(
+                                                shape = RoundedCornerShape(6.dp),
+                                                color = MaterialTheme.colorScheme.primary
+                                            ) {
+                                                Text(
+                                                    text = "LATEST",
+                                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 9.sp,
+                                                    color = MaterialTheme.colorScheme.onPrimary
+                                                )
+                                            }
+                                        }
+                                    }
+                                    Text(
+                                        text = entry.date,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontFamily = FontFamily.Monospace,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    entry.changes.forEach { change ->
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                            verticalAlignment = Alignment.Top
+                                        ) {
+                                            // Badge
+                                            Surface(
+                                                shape = RoundedCornerShape(6.dp),
+                                                color = androidx.compose.ui.graphics.Color(change.type.badgeColorHex)
+                                            ) {
+                                                Text(
+                                                    text = change.type.title,
+                                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    fontWeight = FontWeight.ExtraBold,
+                                                    fontSize = 9.sp,
+                                                    color = androidx.compose.ui.graphics.Color.White
+                                                )
+                                            }
+
+                                            Text(
+                                                text = change.description,
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        copyToClipboard("Changelog TS", ChangelogRegistry.toTypeScriptCode())
+                    },
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Icon(imageVector = Icons.Default.ContentCopy, contentDescription = "Copy TS", modifier = Modifier.size(14.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Copy TS Code")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showChangelogRegistryDialog = false }) {
                     Text("Close")
                 }
             }

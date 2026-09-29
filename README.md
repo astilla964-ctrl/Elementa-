@@ -44,7 +44,7 @@
 
 > *This section is automatically updated by GitHub Actions upon each new release tag.*
 
-### [v1.5.0] — 2026-09-29
+### [v1.5.0] — 2026-09-30
 #### 🚀 Added
 - **Environmental & Thermodynamics Simulation Engine**:
   - *Interactive Heating & Cooling Apparatuses*:
