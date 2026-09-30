@@ -29,6 +29,16 @@ data class ChangelogEntry(
 object ChangelogRegistry {
     val CHANGELOG_HISTORY: List<ChangelogEntry> = listOf(
         ChangelogEntry(
+            version = "Elementa v1.7.0 (Build 6)",
+            date = "2026-09-30",
+            changes = listOf(
+                ChangeItem(ChangeType.FEAT, "Industrial Scale & Plant Automation Module ('Chemical Works') with CSTR & PFR reactors"),
+                ChangeItem(ChangeType.FEAT, "Continuous flow physics engine with residence time (tau = V/Q) and kinetic conversion yield"),
+                ChangeItem(ChangeType.FEAT, "Wet absorption gas scrubber and effluent wastewater neutralization basin with EPA compliance"),
+                ChangeItem(ChangeType.UI, "Interactive P&ID plant control schematic with live sensor transmitters (TT, PT, FT, AT, pH)")
+            )
+        ),
+        ChangelogEntry(
             version = "Elementa v1.6.0 (Build 5)",
             date = "2026-09-30",
             changes = listOf(

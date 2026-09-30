@@ -51,6 +51,7 @@ import com.example.ui.OrientationSetting
 import com.example.ui.assignments.AssignmentsScreen
 import com.example.ui.compounds.CompoundsScreen
 import com.example.ui.lab.LabWorkbenchScreen
+import com.example.ui.plant.ChemicalWorksScreen
 import com.example.ui.settings.SettingsScreen
 import com.example.ui.theme.ElementaTheme
 import com.example.ui.tools.ToolsScreen
@@ -126,6 +127,16 @@ fun ElementaApp(viewModel: MainViewModel) {
                     },
                     label = { Text("Lab", fontSize = 11.sp) },
                     modifier = Modifier.testTag("nav_lab")
+                )
+
+                NavigationRailItem(
+                    selected = currentScreen == AppScreen.PLANT,
+                    onClick = { viewModel.navigateTo(AppScreen.PLANT) },
+                    icon = {
+                        Text(text = "🏭", fontSize = 18.sp)
+                    },
+                    label = { Text("Plant", fontSize = 11.sp) },
+                    modifier = Modifier.testTag("nav_plant")
                 )
 
                 NavigationRailItem(
@@ -223,6 +234,16 @@ fun ElementaApp(viewModel: MainViewModel) {
                     )
 
                     NavigationBarItem(
+                        selected = currentScreen == AppScreen.PLANT,
+                        onClick = { viewModel.navigateTo(AppScreen.PLANT) },
+                        icon = {
+                            Text(text = "🏭", fontSize = 20.sp)
+                        },
+                        label = { Text("Plant", fontSize = 12.sp) },
+                        modifier = Modifier.testTag("nav_plant")
+                    )
+
+                    NavigationBarItem(
                         selected = currentScreen == AppScreen.TOOLS,
                         onClick = { viewModel.navigateTo(AppScreen.TOOLS) },
                         icon = {
@@ -299,6 +320,7 @@ private fun ScreenContent(
 ) {
     when (screen) {
         AppScreen.LAB -> LabWorkbenchScreen(viewModel = viewModel, isLandscape = isLandscape)
+        AppScreen.PLANT -> ChemicalWorksScreen(viewModel = viewModel, isLandscape = isLandscape)
         AppScreen.TOOLS -> ToolsScreen(viewModel = viewModel, isLandscape = isLandscape)
         AppScreen.COMPOUNDS -> CompoundsScreen(viewModel = viewModel, isLandscape = isLandscape)
         AppScreen.ASSIGNMENTS -> AssignmentsScreen(viewModel = viewModel, isLandscape = isLandscape)

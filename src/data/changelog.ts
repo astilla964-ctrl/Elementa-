@@ -9,6 +9,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_HISTORY: ChangelogEntry[] = [
   {
+    version: "Elementa v1.7.0 (Build 6)",
+    date: "2026-09-30",
+    changes: [
+      { type: "feat", description: "Industrial Scale & Plant Automation Module ('Chemical Works') with CSTR & PFR reactors" },
+      { type: "feat", description: "Continuous flow physics engine with residence time (tau = V/Q) and kinetic conversion yield" },
+      { type: "feat", description: "Wet absorption gas scrubber and effluent wastewater neutralization basin with EPA compliance" },
+      { type: "ui", description: "Interactive P&ID plant control schematic with live sensor transmitters (TT, PT, FT, AT, pH)" }
+    ]
+  },
+  {
     version: "Elementa v1.6.0 (Build 5)",
     date: "2026-09-30",
     changes: [

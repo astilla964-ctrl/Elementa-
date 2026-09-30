@@ -40,6 +40,7 @@ import kotlin.math.roundToInt
 
 enum class AppScreen {
     LAB,
+    PLANT,
     TOOLS,
     COMPOUNDS,
     ASSIGNMENTS,

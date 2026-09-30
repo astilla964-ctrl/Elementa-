@@ -19,6 +19,13 @@
 
 ## ✨ Features
 
+- **🏭 Industrial Scale & Plant Automation Module ("Chemical Works")**:
+  - *Unit Operations Equipment*: Continuously Stirred Tank Reactors (CSTR with variable volume from $100\text{--}10,000\text{ L}$ and impeller agitation) and Plug Flow Reactors (PFR with tubular axial flow kinetics).
+  - *Modular Transport Lines*: Centrifugal pumps with RPM and variable flow rates ($L/\text{min}$), process valves, check valves, and line pressure monitoring ($kPa$).
+  - *Thermal Exchange Jackets*: External cooling and heating jackets with automated closed-loop PID, chilled water cooling, and high-pressure steam heating.
+  - *Continuous Flow Physics Engine*: Real-time mass and volumetric conservation ($\text{Accumulation} = \text{Flow In} - \text{Flow Out} + \text{Generation} - \text{Consumption}$), residence time optimization ($\tau = V / Q$), and Arrhenius kinetic conversion.
+  - *Environmental Safety & Scrubber Systems*: Counter-current wet absorption gas scrubbers for flue gases ($SO_2, Cl_2, NH_3$), effluent treatment basin with automated caustic/acid pH balancing ($6.5\text{--}8.5$), and overpressurization emergency relief interlocks.
+  - *Interactive P&ID Schematic & Industrial Contracts*: High-level piping and instrumentation diagram with animated flow paths, digital transmitter tags ($TT, PT, FT, AT, pH$), and continuous industrial campaign contracts.
 - **🔥 Environmental & Thermodynamics Simulation Engine**:
   - *Interactive Heating & Cooling Apparatuses*: Bunsen Burner with adjustable roaring gas flame (up to 1,500°C), Digital Hot Plate (up to 550°C), Ice Water Bath (0°C), Dry Ice / Acetone Bath (-78.5°C), and Cryogenic Liquid Nitrogen Dewar (-196°C).
   - *Pressure & Sealed Atmosphere Equipment*: Gastight rubber stopper with calibrated dial pressure gauge (0 - 100 atm), quick-action pressure relief valve, vacuum pump (<0.1 atm), and gas compressor.
@@ -44,6 +51,31 @@
 ## 📜 Automatic Changelog
 
 > *This section is automatically updated by GitHub Actions upon each new release tag.*
+
+### [v1.7.0] — 2026-09-30
+#### 🚀 Added
+- **Industrial Scale & Plant Automation Module ("Chemical Works")**:
+  - *Unit Operations Equipment*:
+    - **CSTR (Continuously Stirred Tank Reactor)**: Automated reaction vessel with configurable volume ($100\text{--}10,000\text{ L}$) and dynamic impeller agitation ($0\text{--}600\text{ RPM}$).
+    - **PFR (Plug Flow Tubular Reactor)**: Continuous tubular reactor model with axial concentration gradients and space-time conversion kinetics.
+    - **Modular Transport Piping & Centrifugal Pumps**: Feed Pump A, Feed Pump B, and Reactor Discharge Pump with variable throughput ($L/\text{min}$), process valves, and line pressure sensors ($kPa$).
+    - **Thermal Exchange Jackets**: Isothermal control jackets supporting closed-loop PID control, active chilled water cooling, and high-pressure steam heating.
+  - *Continuous Flow Physics Engine*:
+    - Mass and volumetric balance differential equations ($\text{Accumulation} = \text{Flow In} - \text{Flow Out} + \text{Generation} - \text{Consumption}$).
+    - Fluid residence time optimization ($\tau = V / Q$) and Arrhenius temperature-dependent kinetic conversion ($k(T) = A \cdot e^{-E_a/(RT)}$).
+    - Exothermic/endothermic thermal generation and jacket heat exchange ($Q_{hx} = UA(T_j - T_r)$).
+    - Pressure modeling with Antoine vapor pressure approximations and overpressurization line rupture protection.
+  - *Environmental Safety & Effluent Treatment*:
+    - **Counter-Current Wet Absorption Scrubber**: Gas absorption tower with wash solvent dosing to scrub toxic/acidic emissions ($SO_2, Cl_2, NH_3$) under legal limits ($<50\text{ PPM}$).
+    - **Effluent Neutralization Basin**: Wastewater treatment basin with automated caustic ($NaOH$) and acid ($H_2SO_4$) dosing to maintain regulatory neutral pH ($6.5\text{--}8.5$).
+    - **Environmental Violation & Fines System**: EPA audits, credit penalties, and emergency relief alerts for non-compliant emissions or acid spills.
+  - *P&ID Plant Control Schematic & Industrial Contracts*:
+    - Interactive high-level piping and instrumentation diagram (P&ID) with animated fluid flow paths and live digital transmitter badges ($TT, PT, FT, AT, pH$).
+    - Commercial continuous campaigns: Bulk Sulfuric Acid Campaign ($5,000\text{ L}$), Ammonium Sulfate Stream ($3,500\text{ L}$), Brine Neutralization ($4,000\text{ L}$), and Ethyl Acetate Refining ($2,000\text{ L}$).
+    - Master Emergency Shutdown (ESD) trip interlock with auto-level balancing.
+  - *Adaptive Navigation*: Integrated dedicated "Plant" tab into portrait bottom navigation and landscape side navigation rail.
+
+---
 
 ### [v1.6.0] — 2026-09-30
 #### 🚀 Added
